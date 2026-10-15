@@ -1,0 +1,222 @@
+{
+  "metadata": {
+    "audit_timestamp_utc": "2026-10-15T03:25:24.895796+00:00",
+    "source_file": "c:/Projects/data/raw/github_issues_raw.parquet",
+    "source_file_bytes": 12659096,
+    "sha256": "09453eefae39e45a969ab0bee72ca0e188fe79dc50403b0f2a78c39894f5d1a3",
+    "provenance": "Hugging Face Datasets: helmo/github-issues (extracted from huggingface/datasets repo)",
+    "license": "Apache 2.0"
+  },
+  "record_counts": {
+    "raw_total_records": 7540,
+    "raw_columns_count": 33,
+    "unique_record_ids": 7440,
+    "unique_issue_numbers": 7440,
+    "duplicate_id_rows": 100,
+    "deduplicated_records": 7440,
+    "raw_pull_requests": 4376,
+    "raw_issues": 3164,
+    "pure_issues_deduplicated": 3115,
+    "pure_prs_deduplicated": 4325
+  },
+  "repositories": {
+    "huggingface/datasets": 7540
+  },
+  "text_field_quality": {
+    "title_missing_count": 0,
+    "body_missing_count": 10,
+    "body_empty_count": 20
+  },
+  "labels_quality": {
+    "distinct_labels_count": 33,
+    "zero_label_issues": 1493,
+    "single_label_issues": 1416,
+    "multi_label_issues": 206,
+    "label_frequencies_top30": {
+      "bug": 709,
+      "enhancement": 480,
+      "dataset request": 162,
+      "dataset-viewer": 91,
+      "dataset bug": 74,
+      "good first issue": 53,
+      "duplicate": 30,
+      "documentation": 28,
+      "generic discussion": 27,
+      "question": 24,
+      "vision": 24,
+      "streaming": 22,
+      "speech": 19,
+      "maintenance": 17,
+      "nlp-viewer": 14,
+      "good second issue": 13,
+      "hacktoberfest": 12,
+      "metric bug": 8,
+      "wontfix": 7,
+      "Dataset discussion": 6,
+      "help wanted": 5,
+      "dataset contribution": 4,
+      "hosted-on-google-drive": 3,
+      "Metric discussion": 2,
+      "audio_column": 2,
+      "arrow": 1,
+      "refactoring": 1,
+      "dataset-viewer-rgba-images": 1,
+      "dataset-viewer-gated": 1,
+      "graph": 1
+    }
+  },
+  "timestamps": {
+    "created_at": {
+      "valid_count": 7540,
+      "missing_count": 0,
+      "min": "2020-04-14 10:18:02+00:00",
+      "max": "2025-06-13 09:02:24+00:00"
+    },
+    "updated_at": {
+      "valid_count": 7540,
+      "missing_count": 0,
+      "min": "2020-04-27 16:04:17+00:00",
+      "max": "2025-06-13 10:38:04+00:00"
+    },
+    "closed_at": {
+      "valid_count": 6586,
+      "missing_count": 954,
+      "min": "2020-04-14 12:01:40+00:00",
+      "max": "2025-06-13 00:44:27+00:00"
+    }
+  },
+  "missing_by_column": {
+    "url": {
+      "missing": 0,
+      "pct": 0.0
+    },
+    "repository_url": {
+      "missing": 0,
+      "pct": 0.0
+    },
+    "labels_url": {
+      "missing": 0,
+      "pct": 0.0
+    },
+    "comments_url": {
+      "missing": 0,
+      "pct": 0.0
+    },
+    "events_url": {
+      "missing": 0,
+      "pct": 0.0
+    },
+    "html_url": {
+      "missing": 0,
+      "pct": 0.0
+    },
+    "id": {
+      "missing": 0,
+      "pct": 0.0
+    },
+    "node_id": {
+      "missing": 0,
+      "pct": 0.0
+    },
+    "number": {
+      "missing": 0,
+      "pct": 0.0
+    },
+    "title": {
+      "missing": 0,
+      "pct": 0.0
+    },
+    "user": {
+      "missing": 0,
+      "pct": 0.0
+    },
+    "labels": {
+      "missing": 0,
+      "pct": 0.0
+    },
+    "state": {
+      "missing": 0,
+      "pct": 0.0
+    },
+    "locked": {
+      "missing": 0,
+      "pct": 0.0
+    },
+    "assignee": {
+      "missing": 6761,
+      "pct": 89.67
+    },
+    "assignees": {
+      "missing": 0,
+      "pct": 0.0
+    },
+    "milestone": {
+      "missing": 7474,
+      "pct": 99.12
+    },
+    "comments": {
+      "missing": 0,
+      "pct": 0.0
+    },
+    "created_at": {
+      "missing": 0,
+      "pct": 0.0
+    },
+    "updated_at": {
+      "missing": 0,
+      "pct": 0.0
+    },
+    "closed_at": {
+      "missing": 954,
+      "pct": 12.65
+    },
+    "author_association": {
+      "missing": 0,
+      "pct": 0.0
+    },
+    "type": {
+      "missing": 7540,
+      "pct": 100.0
+    },
+    "active_lock_reason": {
+      "missing": 7540,
+      "pct": 100.0
+    },
+    "draft": {
+      "missing": 3164,
+      "pct": 41.96
+    },
+    "pull_request": {
+      "missing": 3164,
+      "pct": 41.96
+    },
+    "body": {
+      "missing": 355,
+      "pct": 4.71
+    },
+    "closed_by": {
+      "missing": 947,
+      "pct": 12.56
+    },
+    "reactions": {
+      "missing": 0,
+      "pct": 0.0
+    },
+    "timeline_url": {
+      "missing": 0,
+      "pct": 0.0
+    },
+    "performed_via_github_app": {
+      "missing": 7540,
+      "pct": 100.0
+    },
+    "state_reason": {
+      "missing": 5213,
+      "pct": 69.14
+    },
+    "sub_issues_summary": {
+      "missing": 4376,
+      "pct": 58.04
+    }
+  }
+}
