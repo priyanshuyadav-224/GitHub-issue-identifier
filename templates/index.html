@@ -3,15 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GitHub Project Issue Classifier | AI Triage System</title>
+  <title>Milestone 2: GitHub Issue Classifier & EDA Explorer</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #0f172a;
-      --card-bg: #1e293b;
-      --card-border: #334155;
+      --bg: #0b0f19;
+      --card-bg: #151d30;
+      --card-border: #24324f;
       --text: #f8fafc;
       --text-muted: #94a3b8;
       --primary: #3b82f6;
@@ -36,48 +36,51 @@
       flex-direction: column;
     }
 
-    /* Header */
+    /* Top Navbar */
     header {
-      background: #0b1120;
+      background: #070a12;
       border-bottom: 1px solid var(--card-border);
-      padding: 1rem 2rem;
+      padding: 0.9rem 2rem;
       position: sticky;
       top: 0;
       z-index: 100;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      backdrop-filter: blur(8px);
+      backdrop-filter: blur(10px);
     }
     .brand {
       display: flex;
       align-items: center;
-      gap: 0.75rem;
+      gap: 0.85rem;
     }
     .brand-icon {
-      width: 38px;
-      height: 38px;
-      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      width: 42px;
+      height: 42px;
+      background: linear-gradient(135deg, #2563eb, #7c3aed);
       border-radius: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-weight: 800;
-      font-size: 1.2rem;
+      font-size: 1.3rem;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
     }
     .brand-title {
       font-size: 1.15rem;
-      font-weight: 700;
+      font-weight: 800;
       letter-spacing: -0.02em;
+      background: linear-gradient(90deg, #60a5fa, #a78bfa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
     }
     .brand-sub {
-      font-size: 0.75rem;
+      font-size: 0.78rem;
       color: var(--text-muted);
     }
     .nav-tabs {
       display: flex;
-      gap: 0.5rem;
-      background: #1e293b;
+      gap: 0.4rem;
+      background: #111827;
       padding: 0.25rem;
       border-radius: 10px;
       border: 1px solid var(--card-border);
@@ -86,8 +89,8 @@
       background: transparent;
       border: none;
       color: var(--text-muted);
-      padding: 0.5rem 1rem;
-      font-size: 0.85rem;
+      padding: 0.45rem 0.9rem;
+      font-size: 0.82rem;
       font-weight: 600;
       border-radius: 8px;
       cursor: pointer;
@@ -96,13 +99,13 @@
     .nav-btn.active {
       background: var(--primary);
       color: #fff;
-      box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4);
+      box-shadow: 0 2px 8px rgba(59, 130, 246, 0.5);
     }
 
     /* Container */
     .container {
-      max-width: 1280px;
-      margin: 2rem auto;
+      max-width: 1320px;
+      margin: 1.75rem auto;
       padding: 0 1.5rem;
       flex: 1;
       width: 100%;
@@ -111,149 +114,206 @@
     .tab-content { display: none; }
     .tab-content.active { display: block; }
 
-    /* Top stats banner */
-    .stats-grid {
+    /* KPI Banner */
+    .kpi-banner {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
       gap: 1rem;
-      margin-bottom: 2rem;
+      margin-bottom: 1.75rem;
     }
-    .stat-card {
+    .kpi-card {
       background: var(--card-bg);
       border: 1px solid var(--card-border);
       border-radius: var(--radius);
-      padding: 1.25rem;
+      padding: 1.1rem;
       display: flex;
       flex-direction: column;
       box-shadow: var(--shadow);
     }
-    .stat-val {
-      font-size: 1.75rem;
+    .kpi-val {
+      font-size: 1.6rem;
       font-weight: 800;
       color: #60a5fa;
-      letter-spacing: -0.03em;
+      letter-spacing: -0.02em;
     }
-    .stat-lbl {
-      font-size: 0.8rem;
+    .kpi-label {
+      font-size: 0.75rem;
       color: var(--text-muted);
       text-transform: uppercase;
-      font-weight: 600;
-      margin-top: 0.25rem;
+      font-weight: 700;
+      margin-top: 0.2rem;
+    }
+    .kpi-note {
+      font-size: 0.72rem;
+      color: #10b981;
+      margin-top: 0.2rem;
     }
 
-    /* Grid for live classifier */
-    .classifier-grid {
+    /* GitHub Link Ingestion Box */
+    .gh-ingest-card {
+      background: linear-gradient(180deg, #18223a, #131c30);
+      border: 1px solid #2d3e63;
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      box-shadow: var(--shadow);
+    }
+    .gh-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.4rem;
+    }
+    .gh-desc {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 1rem;
+    }
+    .gh-input-group {
+      display: flex;
+      gap: 0.75rem;
+    }
+    .gh-input {
+      flex: 1;
+      background: #0b1120;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      padding: 0.85rem 1.1rem;
+      color: #fff;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.88rem;
+      outline: none;
+      transition: all 0.2s;
+    }
+    .gh-input:focus {
+      border-color: #60a5fa;
+      box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.2);
+    }
+    .btn-fetch {
+      background: linear-gradient(135deg, #2563eb, #3b82f6);
+      color: #fff;
+      border: none;
+      padding: 0 1.5rem;
+      font-weight: 700;
+      font-size: 0.9rem;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      white-space: nowrap;
+      transition: all 0.2s;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+    }
+    .btn-fetch:hover {
+      background: linear-gradient(135deg, #1d4ed8, #2563eb);
+      box-shadow: 0 6px 16px rgba(37, 99, 235, 0.5);
+    }
+
+    /* Preset pills */
+    .presets-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 1rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.07);
+    }
+    .preset-label {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+    .preset-pill {
+      background: #0b1120;
+      border: 1px solid #2d3e63;
+      padding: 0.35rem 0.75rem;
+      font-size: 0.76rem;
+      border-radius: 999px;
+      color: #93c5fd;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+    .preset-pill:hover {
+      background: #24324f;
+      border-color: #60a5fa;
+      color: #fff;
+    }
+
+    /* Main Triage View */
+    .triage-grid {
       display: grid;
-      grid-template-columns: 1.2fr 0.8fr;
-      gap: 2rem;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 1.75rem;
     }
     @media (max-width: 960px) {
-      .classifier-grid { grid-template-columns: 1fr; }
+      .triage-grid { grid-template-columns: 1fr; }
     }
 
     .card {
       background: var(--card-bg);
       border: 1px solid var(--card-border);
       border-radius: var(--radius);
-      padding: 1.75rem;
+      padding: 1.5rem;
       box-shadow: var(--shadow);
     }
+    .card-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.25rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid var(--card-border);
+    }
     .card-title {
-      font-size: 1.25rem;
+      font-size: 1.15rem;
       font-weight: 700;
-      margin-bottom: 0.5rem;
       display: flex;
       align-items: center;
       gap: 0.5rem;
     }
-    .card-desc {
-      font-size: 0.85rem;
-      color: var(--text-muted);
-      margin-bottom: 1.5rem;
-    }
 
-    /* Sample selector */
-    .sample-pill-container {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-      margin-bottom: 1.5rem;
-    }
-    .sample-pill {
-      background: #0f172a;
-      border: 1px solid var(--card-border);
-      color: #cbd5e1;
-      padding: 0.4rem 0.8rem;
-      font-size: 0.78rem;
-      font-weight: 500;
-      border-radius: 9999px;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .sample-pill:hover {
-      background: #334155;
-      border-color: #64748b;
-      color: #fff;
-    }
-
-    /* Form elements */
-    .form-group {
-      margin-bottom: 1.25rem;
-    }
+    /* Form */
+    .form-group { margin-bottom: 1rem; }
     label {
       display: block;
-      font-size: 0.85rem;
+      font-size: 0.82rem;
       font-weight: 600;
-      margin-bottom: 0.4rem;
-      color: #e2e8f0;
+      color: #cbd5e1;
+      margin-bottom: 0.35rem;
     }
     input[type="text"], textarea, select {
       width: 100%;
-      background: #0f172a;
+      background: #090e1a;
       border: 1px solid var(--card-border);
       border-radius: 8px;
-      padding: 0.75rem 1rem;
+      padding: 0.75rem 0.9rem;
       color: #fff;
       font-family: inherit;
-      font-size: 0.9rem;
+      font-size: 0.88rem;
       outline: none;
-      transition: border-color 0.2s, box-shadow 0.2s;
+      transition: border-color 0.2s;
     }
     input[type="text"]:focus, textarea:focus, select:focus {
       border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
     }
     textarea {
-      resize: vertical;
-      min-height: 140px;
+      min-height: 120px;
       font-family: 'JetBrains Mono', monospace;
-      font-size: 0.85rem;
+      font-size: 0.82rem;
     }
 
-    .btn-submit {
-      width: 100%;
-      background: linear-gradient(135deg, #2563eb, #3b82f6);
-      color: #fff;
-      border: none;
-      padding: 0.9rem;
-      font-size: 1rem;
-      font-weight: 600;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: transform 0.1s, box-shadow 0.2s;
-      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);
-    }
-    .btn-submit:hover {
-      background: linear-gradient(135deg, #1d4ed8, #2563eb);
-      box-shadow: 0 6px 20px rgba(37, 99, 235, 0.6);
-    }
-    .btn-submit:active { transform: translateY(1px); }
-
-    /* Results Card */
+    /* Results */
     .result-badge {
       display: inline-block;
-      padding: 0.4rem 1.2rem;
-      font-size: 1.15rem;
+      padding: 0.35rem 1.1rem;
+      font-size: 1.1rem;
       font-weight: 800;
       border-radius: 9999px;
       text-transform: uppercase;
@@ -265,76 +325,58 @@
     .badge-DOCUMENTATION { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid #10b981; }
     .badge-OTHER { background: rgba(139, 92, 246, 0.2); color: #a78bfa; border: 1px solid #8b5cf6; }
 
-    .confidence-meter {
-      margin: 1.5rem 0;
-    }
-    .confidence-label {
-      display: flex;
-      justify-content: space-between;
-      font-size: 0.85rem;
-      font-weight: 600;
-      margin-bottom: 0.5rem;
-    }
-    .progress-bar {
-      height: 10px;
-      background: #0f172a;
-      border-radius: 9999px;
-      overflow: hidden;
-    }
-    .progress-fill {
-      height: 100%;
-      background: linear-gradient(90deg, #3b82f6, #10b981);
-      width: 0%;
-      transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    /* Breakdown list */
+    /* Probability list */
     .prob-item {
       display: flex;
       align-items: center;
       gap: 0.75rem;
-      margin-bottom: 0.6rem;
+      margin-bottom: 0.55rem;
       font-size: 0.8rem;
     }
-    .prob-name { width: 120px; font-weight: 600; }
-    .prob-bar-container { flex: 1; height: 6px; background: #0f172a; border-radius: 999px; overflow: hidden; }
-    .prob-bar { height: 100%; background: #64748b; }
+    .prob-name { width: 115px; font-weight: 600; }
+    .prob-bar-container { flex: 1; height: 7px; background: #090e1a; border-radius: 999px; overflow: hidden; }
+    .prob-bar { height: 100%; }
     .prob-val { width: 45px; text-align: right; font-family: monospace; }
 
-    .meta-tags {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.4rem;
-      margin-top: 1rem;
-    }
-    .meta-tag {
-      background: #0f172a;
-      border: 1px solid var(--card-border);
-      padding: 0.25rem 0.6rem;
-      border-radius: 6px;
-      font-size: 0.75rem;
-      font-family: 'JetBrains Mono', monospace;
-      color: #93c5fd;
-    }
-
-    .routing-box {
+    /* Pipeline Inspector Panel */
+    .inspector-box {
       margin-top: 1.25rem;
       padding: 1rem;
-      background: #0f172a;
+      background: #080c17;
       border: 1px solid var(--card-border);
       border-radius: 8px;
     }
-    .routing-title {
-      font-size: 0.75rem;
-      color: var(--text-muted);
+    .inspector-title {
+      font-size: 0.78rem;
       text-transform: uppercase;
       font-weight: 700;
-      margin-bottom: 0.25rem;
+      color: #60a5fa;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
     }
-    .routing-dest {
-      font-size: 0.95rem;
-      font-weight: 700;
-      color: #f1f5f9;
+    .firewall-tag {
+      display: inline-block;
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid #7f1d1d;
+      color: #fca5a5;
+      padding: 0.2rem 0.5rem;
+      font-size: 0.72rem;
+      font-family: monospace;
+      border-radius: 4px;
+      margin: 0.2rem;
+    }
+    .meta-tag {
+      display: inline-block;
+      background: #1e293b;
+      border: 1px solid #334155;
+      color: #93c5fd;
+      padding: 0.2rem 0.55rem;
+      font-size: 0.72rem;
+      font-family: monospace;
+      border-radius: 4px;
+      margin: 0.2rem;
     }
 
     /* Gallery */
@@ -343,43 +385,74 @@
       grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
       gap: 1.5rem;
     }
-    .gallery-item {
+    .gallery-card {
       background: var(--card-bg);
       border: 1px solid var(--card-border);
       border-radius: var(--radius);
       overflow: hidden;
       box-shadow: var(--shadow);
-      display: flex;
-      flex-direction: column;
     }
-    .gallery-item img {
+    .gallery-card img {
       width: 100%;
       height: 220px;
       object-fit: cover;
-      background: #0f172a;
+      background: #090e1a;
       border-bottom: 1px solid var(--card-border);
+      cursor: pointer;
+      transition: opacity 0.2s;
     }
-    .gallery-info {
-      padding: 1rem;
+    .gallery-card img:hover { opacity: 0.9; }
+    .gallery-body { padding: 1rem; }
+    .gallery-title { font-size: 0.92rem; font-weight: 700; margin-bottom: 0.25rem; }
+    .gallery-desc { font-size: 0.8rem; color: var(--text-muted); }
+
+    /* Buttons row */
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-top: 1rem;
     }
-    .gallery-title {
-      font-size: 0.95rem;
-      font-weight: 700;
-      margin-bottom: 0.25rem;
+    .btn-download {
+      background: #1e293b;
+      border: 1px solid #334155;
+      color: #fff;
+      padding: 0.5rem 1rem;
+      font-size: 0.82rem;
+      font-weight: 600;
+      border-radius: 8px;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: all 0.2s;
     }
-    .gallery-desc {
-      font-size: 0.8rem;
-      color: var(--text-muted);
+    .btn-download:hover {
+      background: #334155;
+      border-color: #60a5fa;
     }
 
-    /* Footer */
+    /* Alert banner */
+    .alert-box {
+      padding: 0.9rem 1.25rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      margin-bottom: 1.25rem;
+      display: none;
+    }
+    .alert-pr {
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid #b45309;
+      color: #fde68a;
+    }
+
     footer {
       border-top: 1px solid var(--card-border);
       padding: 1.5rem 2rem;
       text-align: center;
       font-size: 0.8rem;
       color: var(--text-muted);
-      background: #0b1120;
+      background: #070a12;
     }
   </style>
 </head>
@@ -391,13 +464,14 @@
       <div class="brand-icon">⚡</div>
       <div>
         <div class="brand-title">GitHub Project Issue Classifier</div>
-        <div class="brand-sub">Priyanshu Yadav (S25CSEU0725) | Batch-25</div>
+        <div class="brand-sub">Milestone 2 Dashboard &bull; Priyanshu Yadav (S25CSEU0725) | Batch-25</div>
       </div>
     </div>
     <div class="nav-tabs">
-      <button class="nav-btn active" onclick="switchTab('classifier')">Live Classifier</button>
-      <button class="nav-btn" onclick="switchTab('dataset')">Dataset & EDA</button>
-      <button class="nav-btn" onclick="switchTab('viva')">Viva & Docs</button>
+      <button class="nav-btn active" onclick="switchTab('triage')">Live GitHub Ingestion</button>
+      <button class="nav-btn" onclick="switchTab('audit')">Milestone 2 Audit & EDA</button>
+      <button class="nav-btn" onclick="switchTab('split')">Split Readiness</button>
+      <button class="nav-btn" onclick="switchTab('viva')">Viva & Deliverables</button>
     </div>
   </header>
 
@@ -405,234 +479,390 @@
   <div class="container">
 
     <!-- KPI Stats Banner -->
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-val">7,540</div>
-        <div class="stat-lbl">Raw Records Ingested</div>
+    <div class="kpi-banner">
+      <div class="kpi-card">
+        <div class="kpi-val">7,540</div>
+        <div class="kpi-label">Raw Ingested Records</div>
+        <div class="kpi-note">Source: helmo/github-issues</div>
       </div>
-      <div class="stat-card">
-        <div class="stat-val">4,325</div>
-        <div class="stat-lbl">Pull Requests Filtered</div>
+      <div class="kpi-card">
+        <div class="kpi-val">100</div>
+        <div class="kpi-label">Duplicates Removed</div>
+        <div class="kpi-note">Rows 0..99 double-fetch resolved</div>
       </div>
-      <div class="stat-card">
-        <div class="stat-val">3,115</div>
-        <div class="stat-lbl">Pure Issues Audited</div>
+      <div class="kpi-card">
+        <div class="kpi-val">4,325</div>
+        <div class="kpi-label">Pull Requests Filtered</div>
+        <div class="kpi-note">58.1% of raw corpus (skew eliminated)</div>
       </div>
-      <div class="stat-card">
-        <div class="stat-val">1,459</div>
-        <div class="stat-lbl">Clean Supervised Targets</div>
+      <div class="kpi-card">
+        <div class="kpi-val">3,115</div>
+        <div class="kpi-label">Pure GitHub Issues</div>
+        <div class="kpi-note">100% complete titles (0 nulls)</div>
       </div>
-      <div class="stat-card">
-        <div class="stat-val">45:1</div>
-        <div class="stat-lbl">Class Imbalance (BUG/OTHER)</div>
+      <div class="kpi-card">
+        <div class="kpi-val">1,459</div>
+        <div class="kpi-label">Supervised Dataset</div>
+        <div class="kpi-note">BUG: 771 | FEATURE: 615</div>
       </div>
     </div>
 
-    <!-- TAB 1: Live Classifier -->
-    <div id="tab-classifier" class="tab-content active">
-      <div class="classifier-grid">
-        
-        <!-- Left Column: Input Form -->
-        <div class="card">
-          <div class="card-title">📝 Submit or Test GitHub Issue</div>
-          <div class="card-desc">Type an issue or select a preset real-world test case to test classification in real time.</div>
+    <!-- TAB 1: Live GitHub Ingestion & Triage -->
+    <div id="tab-triage" class="tab-content active">
 
-          <div class="sample-pill-container" id="samplesContainer">
-            <!-- Sample pills loaded via JS -->
+      <!-- GitHub Link Ingestion Box -->
+      <div class="gh-ingest-card">
+        <div class="gh-title">🔗 Live GitHub Issue Ingestion (Milestone 2 Ingestion Pipeline)</div>
+        <div class="gh-desc">
+          Paste any public GitHub issue URL (from our verified dataset or any open-source repo). The pipeline fetches live metadata, applies the Milestone 2 leakage firewall, normalizes text, and classifies the ticket.
+        </div>
+        <div class="gh-input-group">
+          <input type="text" id="ghUrlInput" class="gh-input" placeholder="https://github.com/huggingface/datasets/issues/116" value="https://github.com/huggingface/datasets/issues/116">
+          <button class="btn-fetch" id="btnFetch" onclick="fetchIssueUrl()">⚡ Fetch & Triage</button>
+        </div>
+
+        <!-- Presets Row -->
+        <div class="presets-row" id="presetsRow">
+          <span class="preset-label">Verified Presets:</span>
+          <!-- Loaded via JS -->
+        </div>
+      </div>
+
+      <!-- PR Filter Alert Banner -->
+      <div id="prAlertBox" class="alert-box alert-pr">
+        <div style="font-weight: 700; margin-bottom: 0.25rem;">⚠️ Milestone 2 Protocol Enforced: Pull Request Detected</div>
+        <div id="prAlertMessage"></div>
+      </div>
+
+      <!-- Triage Main Grid -->
+      <div class="triage-grid">
+        
+        <!-- Left: Issue Form & Preprocessing Inspector -->
+        <div class="card">
+          <div class="card-head">
+            <div class="card-title">📝 Issue Submission Data</div>
+            <span id="fetchSourceBadge" style="font-size: 0.75rem; background: #1e293b; color: #60a5fa; padding: 0.2rem 0.6rem; border-radius: 6px; border: 1px solid #334155;">
+              Local Verified Cache
+            </span>
           </div>
 
           <form id="issueForm">
             <div class="form-group">
-              <label for="title">Issue Title <span style="color:#ef4444">*</span></label>
-              <input type="text" id="title" placeholder="e.g. TypeError: 'generator' object is not subscriptable" required>
+              <label for="title">Title <span style="color:#ef4444">*</span></label>
+              <input type="text" id="title" required>
             </div>
 
             <div class="form-group">
-              <label for="body">Issue Description / Body</label>
-              <textarea id="body" placeholder="Describe the behavior, error logs, or request details..."></textarea>
+              <label for="body">Description / Body</label>
+              <textarea id="body"></textarea>
             </div>
 
-            <div class="form-group">
-              <label for="authorAssociation">Author Relationship Context</label>
-              <select id="authorAssociation">
-                <option value="NONE">NONE (Casual / External User)</option>
-                <option value="CONTRIBUTOR">CONTRIBUTOR (Submitted previous PRs)</option>
-                <option value="MEMBER">MEMBER (Repository Core Maintainer)</option>
-                <option value="COLLABORATOR">COLLABORATOR</option>
-              </select>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+              <div class="form-group">
+                <label for="authorAssociation">Author Association (Creation Time)</label>
+                <select id="authorAssociation">
+                  <option value="NONE">NONE (Casual / External User)</option>
+                  <option value="CONTRIBUTOR">CONTRIBUTOR</option>
+                  <option value="MEMBER">MEMBER (Maintainer)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="groundTruthClass">Source Labels Ground Truth</label>
+                <input type="text" id="groundTruthClass" readonly style="color: #34d399; font-weight: 600;" value="BUG (Mapped from 'bug')">
+              </div>
             </div>
 
-            <button type="submit" class="btn-submit" id="submitBtn">⚡ Run Real-Time Classification</button>
+            <button type="submit" class="btn-fetch" style="width: 100%; justify-content: center; padding: 0.85rem;" id="btnClassify">
+              ⚡ Classify With Milestone 2 Baseline Model
+            </button>
           </form>
+
+          <!-- Preprocessing Live Trace -->
+          <div class="inspector-box">
+            <div class="inspector-title">🛡️ Milestone 2 Data Leakage Firewall Check</div>
+            <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem;">
+              The following post-triage fields were identified and <strong>strictly excluded from input features</strong> to prevent target leakage:
+            </div>
+            <div id="firewalledFieldsList">
+              <span class="firewall-tag">state: closed (excluded)</span>
+              <span class="firewall-tag">comments: 2 (excluded)</span>
+              <span class="firewall-tag">assignee: null (excluded)</span>
+              <span class="firewall-tag">milestone: null (excluded)</span>
+            </div>
+          </div>
         </div>
 
-        <!-- Right Column: Live Results -->
+        <!-- Right: Classification Output -->
         <div class="card" id="resultsCard">
-          <div class="card-title">🎯 Classification Output</div>
-          <div class="card-desc">Predicted using sublinear TF-IDF + Logistic Regression with cost-sensitive class weights.</div>
-
-          <div id="placeholderResult" style="text-align: center; padding: 3rem 1rem; color: var(--text-muted);">
-            <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🔍</div>
-            <div>Submit an issue or click a preset sample above to see live ML predictions.</div>
+          <div class="card-head">
+            <div class="card-title">🎯 Prediction & Routing Output</div>
+            <div id="priorityBadge" style="font-size: 0.78rem; font-weight: 700; padding: 0.2rem 0.6rem; border-radius: 6px; background: rgba(239,68,68,0.2); color: #f87171;">
+              HIGH PRIORITY
+            </div>
           </div>
 
-          <div id="actualResult" style="display: none;">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <div>
-                <span class="result-badge" id="predictedClass">BUG</span>
-              </div>
-              <div id="priorityBadge" style="font-size: 0.8rem; font-weight: 700; padding: 0.25rem 0.75rem; border-radius: 6px; background: rgba(239,68,68,0.2); color: #f87171;">
-                HIGH PRIORITY
-              </div>
+          <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 1.25rem;">
+            <div>
+              <span class="result-badge" id="predictedClass">BUG</span>
             </div>
-
-            <div class="confidence-meter">
-              <div class="confidence-label">
-                <span>Model Confidence</span>
-                <span id="confidencePct" style="color: #60a5fa;">92.4%</span>
-              </div>
-              <div class="progress-bar">
-                <div class="progress-fill" id="progressFill"></div>
-              </div>
+            <div style="text-align: right;">
+              <span style="font-size: 0.8rem; color: var(--text-muted);">Confidence:</span>
+              <span id="confidencePct" style="font-size: 1.25rem; font-weight: 800; color: #60a5fa; margin-left: 0.25rem;">92.4%</span>
             </div>
+          </div>
 
-            <div style="font-size: 0.85rem; font-weight: 600; margin-bottom: 0.75rem; color: #cbd5e1;">Class Probability Distribution</div>
-            <div id="probList"></div>
+          <div style="font-size: 0.82rem; font-weight: 600; margin-bottom: 0.6rem; color: #cbd5e1;">Class Probability Distribution (5 Classes)</div>
+          <div id="probList"></div>
 
-            <div class="routing-box">
-              <div class="routing-title">Suggested Routing & Team</div>
-              <div class="routing-dest" id="routingDest">Core Framework &rarr; team-core-triage</div>
+          <div class="inspector-box" style="margin-top: 1.25rem;">
+            <div class="inspector-title">🚚 Automated Routing Recommendation</div>
+            <div id="routingDest" style="font-size: 0.95rem; font-weight: 700; color: #fff;">
+              Core Engine &rarr; <span style="font-family: monospace; color: #93c5fd;">team-core-triage</span>
             </div>
+          </div>
 
-            <div style="margin-top: 1.25rem;">
-              <div style="font-size: 0.8rem; font-weight: 600; color: #94a3b8;">Key Influential Tokens Detected</div>
-              <div class="meta-tags" id="keywordsList"></div>
-            </div>
+          <div style="margin-top: 1.25rem;">
+            <div style="font-size: 0.8rem; font-weight: 600; color: #94a3b8; margin-bottom: 0.4rem;">Top Discriminative N-Grams Detected:</div>
+            <div id="keywordsList"></div>
           </div>
         </div>
 
       </div>
     </div>
 
-    <!-- TAB 2: Dataset & EDA Gallery -->
-    <div id="tab-dataset" class="tab-content">
-      <div style="margin-bottom: 1.5rem;">
-        <h2 style="font-size: 1.4rem; font-weight: 700;">Exploratory Data Analysis (EDA) Gallery</h2>
-        <p style="color: var(--text-muted); font-size: 0.9rem;">11 Publication-grade figures generated from the actual 7,540 raw and 1,459 supervised GitHub issues.</p>
+    <!-- TAB 2: Milestone 2 Audit & EDA Gallery -->
+    <div id="tab-audit" class="tab-content">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <div>
+          <h2 style="font-size: 1.35rem; font-weight: 700;">Milestone 2: Exploratory Data Analysis & Quality Audit</h2>
+          <p style="color: var(--text-muted); font-size: 0.85rem;">All 11 figures are dynamically generated from the actual loaded dataset (no synthetic numbers).</p>
+        </div>
+        <div class="btn-row" style="margin: 0;">
+          <a href="/download/audit-json" class="btn-download">📥 Audit JSON</a>
+          <a href="/download/audit-md" class="btn-download">📥 Audit Markdown</a>
+        </div>
       </div>
 
       <div class="gallery-grid">
-        <div class="gallery-item">
-          <img src="/reports/figures/fig01_filtering_pipeline_counts.png" alt="Filtering Pipeline">
-          <div class="gallery-info">
-            <div class="gallery-title">1. Pipeline Ingestion Funnel</div>
-            <div class="gallery-desc">Raw (7,540) &rarr; Dedup (7,440) &rarr; Pure Issues (3,115) &rarr; Supervised (1,459).</div>
+        <div class="gallery-card">
+          <img src="/reports/figures/fig01_filtering_pipeline_counts.png" alt="Filtering Funnel" onclick="window.open(this.src)">
+          <div class="gallery-body">
+            <div class="gallery-title">1. Pipeline Ingestion & Filtering Funnel</div>
+            <div class="gallery-desc">Raw (7,540) &rarr; Deduplicated (7,440) &rarr; Pure Issues (3,115) &rarr; Supervised (1,459).</div>
           </div>
         </div>
 
-        <div class="gallery-item">
-          <img src="/reports/figures/fig02_class_frequency_imbalance.png" alt="Class Imbalance">
-          <div class="gallery-info">
-            <div class="gallery-title">2. Target Class Imbalance</div>
-            <div class="gallery-desc">45:1 Imbalance ratio between BUG (771) and OTHER (17). Mandates Macro-F1.</div>
+        <div class="gallery-card">
+          <img src="/reports/figures/fig02_class_frequency_imbalance.png" alt="Class Imbalance" onclick="window.open(this.src)">
+          <div class="gallery-body">
+            <div class="gallery-title">2. Target Class Imbalance (45:1 Ratio)</div>
+            <div class="gallery-desc">BUG (771) vs OTHER (17). Mandates Macro-F1 and balanced loss weights.</div>
           </div>
         </div>
 
-        <div class="gallery-item">
-          <img src="/reports/figures/fig09_ngram_frequency_analysis.png" alt="N-Grams">
-          <div class="gallery-info">
-            <div class="gallery-title">3. Linguistic N-Grams</div>
-            <div class="gallery-desc">Bugs dominated by "traceback call"; Features by "add support".</div>
+        <div class="gallery-card">
+          <img src="/reports/figures/fig09_ngram_frequency_analysis.png" alt="Linguistic N-Grams" onclick="window.open(this.src)">
+          <div class="gallery-body">
+            <div class="gallery-title">3. Discriminative N-Grams (BUG vs FEATURE)</div>
+            <div class="gallery-desc">Bugs: "traceback call", "error message"; Features: "add support", "feature request".</div>
           </div>
         </div>
 
-        <div class="gallery-item">
-          <img src="/reports/figures/fig07_text_length_distributions.png" alt="Text Lengths">
-          <div class="gallery-info">
-            <div class="gallery-title">4. Text Length Distributions</div>
-            <div class="gallery-desc">Gaussian title length (67 chars); right-skewed body word count (median 98 words).</div>
+        <div class="gallery-card">
+          <img src="/reports/figures/fig07_text_length_distributions.png" alt="Text Lengths" onclick="window.open(this.src)">
+          <div class="gallery-body">
+            <div class="gallery-title">4. Title & Body Length Distributions</div>
+            <div class="gallery-desc">Gaussian title length (67 chars); right-skewed body length (median 98 words).</div>
           </div>
         </div>
 
-        <div class="gallery-item">
-          <img src="/reports/figures/fig08_issue_creation_timeline.png" alt="Creation Timeline">
-          <div class="gallery-info">
-            <div class="gallery-title">5. Inflow Timeline (2020-2025)</div>
-            <div class="gallery-desc">5-year arrival trends showing peak maintainer activity in 2022-2023.</div>
+        <div class="gallery-card">
+          <img src="/reports/figures/fig08_issue_creation_timeline.png" alt="Timeline" onclick="window.open(this.src)">
+          <div class="gallery-body">
+            <div class="gallery-title">5. Issue Inflow Timeline (2020 - 2025)</div>
+            <div class="gallery-desc">Captures 5-year project evolution with peak maintainer triage activity in 2022-2023.</div>
           </div>
         </div>
 
-        <div class="gallery-item">
-          <img src="/reports/figures/fig06_missingness_analysis.png" alt="Missingness">
-          <div class="gallery-info">
-            <div class="gallery-title">6. Missingness Audit</div>
-            <div class="gallery-desc">Core text has 0% missing titles; post-triage fields are 89-99% missing.</div>
+        <div class="gallery-card">
+          <img src="/reports/figures/fig06_missingness_analysis.png" alt="Missingness" onclick="window.open(this.src)">
+          <div class="gallery-body">
+            <div class="gallery-title">6. Column Missingness Audit</div>
+            <div class="gallery-desc">Core text has 0% title nulls, while post-triage fields are 89-99% missing.</div>
+          </div>
+        </div>
+
+        <div class="gallery-card">
+          <img src="/reports/figures/fig03_original_label_frequency.png" alt="Original Labels" onclick="window.open(this.src)">
+          <div class="gallery-body">
+            <div class="gallery-title">7. Top 20 Original GitHub Labels</div>
+            <div class="gallery-desc">Shows orthogonal tags (type, difficulty, component) mapped into canonical classes.</div>
+          </div>
+        </div>
+
+        <div class="gallery-card">
+          <img src="/reports/figures/fig05_class_distribution_by_repo.png" alt="Author Association" onclick="window.open(this.src)">
+          <div class="gallery-body">
+            <div class="gallery-title">8. Class Distribution by Author Association</div>
+            <div class="gallery-desc">Casual users (NONE) submit mostly bugs; maintainers (MEMBER) submit features.</div>
+          </div>
+        </div>
+
+        <div class="gallery-card">
+          <img src="/reports/figures/fig10_duplicate_analysis.png" alt="Duplicate Analysis" onclick="window.open(this.src)">
+          <div class="gallery-body">
+            <div class="gallery-title">9. Duplicate & Near-Duplicate Contamination</div>
+            <div class="gallery-desc">100 exact row duplicates resolved; 483 near-duplicate pairs identified for cross-validation grouping.</div>
+          </div>
+        </div>
+
+        <div class="gallery-card">
+          <img src="/reports/figures/fig11_class_counts_before_after_filtering.png" alt="Filtering Comparison" onclick="window.open(this.src)">
+          <div class="gallery-body">
+            <div class="gallery-title">10. Class Counts Before vs. After Filtering</div>
+            <div class="gallery-desc">Demonstrates reduction from noisy candidate mentions to clean supervised ground truth.</div>
+          </div>
+        </div>
+
+        <div class="gallery-card">
+          <img src="/reports/figures/fig04_records_by_repository.png" alt="Repository Distribution" onclick="window.open(this.src)">
+          <div class="gallery-body">
+            <div class="gallery-title">11. Repository Entity Composition</div>
+            <div class="gallery-desc">Breakdown of huggingface/datasets into PRs, supervised issues, and unsupervised exploration.</div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- TAB 3: Viva & Architecture Reference -->
+    <!-- TAB 3: Split Readiness -->
+    <div id="tab-split" class="tab-content">
+      <div class="card" style="margin-bottom: 1.5rem;">
+        <div class="card-title">🧪 Milestone 2 Split Readiness & Leakage Assessment</div>
+        <div class="card-desc">Evaluates whether the 1,459 supervised issues can support unbiased machine learning evaluation in Milestone 3.</div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; margin-top: 1rem;">
+          <div class="inspector-box">
+            <div class="inspector-title">✓ 5-Fold Stratified Split Feasibility</div>
+            <p style="font-size: 0.85rem; color: #cbd5e1;">
+              <strong>Supported:</strong> The smallest class (<code>OTHER</code>) has 17 samples. Since $17 \ge 5$, 5-fold stratified cross-validation is mathematically valid with 3–4 minority samples per fold.
+            </p>
+          </div>
+
+          <div class="inspector-box">
+            <div class="inspector-title">⚠️ Near-Duplicate Cross-Split Contamination</div>
+            <p style="font-size: 0.85rem; color: #cbd5e1;">
+              <strong>483 Pairs Detected:</strong> Issues with TF-IDF cosine similarity $\ge 0.85$ (e.g. identical stack traces) must be clustered into the same fold to prevent optimistic test inflation.
+            </p>
+          </div>
+
+          <div class="inspector-box">
+            <div class="inspector-title">⏱️ Temporal Split Simulation (80% / 20%)</div>
+            <p style="font-size: 0.85rem; color: #cbd5e1;">
+              <strong>Cutoff Date:</strong> <code>2023-01-26</code>. Earlier issues were bug-heavy; recent issues are feature-heavy. Temporal split serves as production concept drift benchmark.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🔬 Automated Unit Test Suite (100% Pass Rate)</div>
+        <div class="card-desc">Verified via <code>pytest -v tests/test_data_pipeline.py</code> (7 passed in 2.86s).</div>
+        
+        <table style="width: 100%; font-size: 0.85rem; border-collapse: collapse; margin-top: 0.75rem;">
+          <thead>
+            <tr style="border-bottom: 1px solid var(--card-border); color: #94a3b8; text-align: left;">
+              <th style="padding: 0.5rem;">Test Case</th>
+              <th style="padding: 0.5rem;">Constraint Verified</th>
+              <th style="padding: 0.5rem;">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="padding: 0.5rem; font-family: monospace;">test_loading_chosen_format</td>
+              <td style="padding: 0.5rem;">Parquet ingestion and column schema integrity</td>
+              <td style="padding: 0.5rem; color: #34d399; font-weight: 700;">PASSED</td>
+            </tr>
+            <tr>
+              <td style="padding: 0.5rem; font-family: monospace;">test_missing_text_normalization</td>
+              <td style="padding: 0.5rem;">HTML/Markdown stripping & code token preservation</td>
+              <td style="padding: 0.5rem; color: #34d399; font-weight: 700;">PASSED</td>
+            </tr>
+            <tr>
+              <td style="padding: 0.5rem; font-family: monospace;">test_label_mapping_and_conflicts</td>
+              <td style="padding: 0.5rem;">Deterministic 5-class taxonomy & conflict exclusion</td>
+              <td style="padding: 0.5rem; color: #34d399; font-weight: 700;">PASSED</td>
+            </tr>
+            <tr>
+              <td style="padding: 0.5rem; font-family: monospace;">test_duplicate_and_pull_request_filtering</td>
+              <td style="padding: 0.5rem;">ID deduplication and PR exclusion firewall</td>
+              <td style="padding: 0.5rem; color: #34d399; font-weight: 700;">PASSED</td>
+            </tr>
+            <tr>
+              <td style="padding: 0.5rem; font-family: monospace;">test_leakage_fields_exclusion</td>
+              <td style="padding: 0.5rem;">Exclusion of all 12 post-triage metadata attributes</td>
+              <td style="padding: 0.5rem; color: #34d399; font-weight: 700;">PASSED</td>
+            </tr>
+            <tr>
+              <td style="padding: 0.5rem; font-family: monospace;">test_deterministic_cleaning</td>
+              <td style="padding: 0.5rem;">Bitwise reproducible pipeline outputs across runs</td>
+              <td style="padding: 0.5rem; color: #34d399; font-weight: 700;">PASSED</td>
+            </tr>
+            <tr>
+              <td style="padding: 0.5rem; font-family: monospace;">test_real_research_dataset_integrity</td>
+              <td style="padding: 0.5rem;">Exact row counts (3,115 clean, 1,459 supervised)</td>
+              <td style="padding: 0.5rem; color: #34d399; font-weight: 700;">PASSED</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAB 4: Viva & Deliverables -->
     <div id="tab-viva" class="tab-content">
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
         
         <div class="card">
-          <div class="card-title">🛡️ Data Leakage Firewall</div>
-          <div class="card-desc">Features available at submission vs firewalled post-triage attributes.</div>
+          <div class="card-title">📁 Download Milestone 2 Deliverables</div>
+          <div class="card-desc">Formal assessment documents ready for college submission and evaluation.</div>
           
-          <table style="width: 100%; font-size: 0.85rem; border-collapse: collapse;">
-            <thead>
-              <tr style="border-bottom: 1px solid var(--card-border); color: #cbd5e1;">
-                <th style="padding: 0.5rem; text-align: left;">Allowed Features (Creation-Time)</th>
-                <th style="padding: 0.5rem; text-align: left;">Firewalled (Leaky Post-Triage)</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td style="padding: 0.5rem; color: #34d399;">✓ clean_title (Author input)</td>
-                <td style="padding: 0.5rem; color: #f87171;">✗ state (closed / open)</td>
-              </tr>
-              <tr>
-                <td style="padding: 0.5rem; color: #34d399;">✓ clean_body (Author input)</td>
-                <td style="padding: 0.5rem; color: #f87171;">✗ closed_at / closed_by</td>
-              </tr>
-              <tr>
-                <td style="padding: 0.5rem; color: #34d399;">✓ author_association (Role)</td>
-                <td style="padding: 0.5rem; color: #f87171;">✗ comments count & text</td>
-              </tr>
-              <tr>
-                <td style="padding: 0.5rem; color: #34d399;">✓ created_at (Timestamp)</td>
-                <td style="padding: 0.5rem; color: #f87171;">✗ assignee / assignees</td>
-              </tr>
-              <tr>
-                <td style="padding: 0.5rem; color: #34d399;">✓ word & char lengths</td>
-                <td style="padding: 0.5rem; color: #f87171;">✗ milestone & reactions</td>
-              </tr>
-            </tbody>
-          </table>
+          <div class="btn-row" style="flex-direction: column;">
+            <a href="/download/report-pdf" class="btn-download" style="justify-content: space-between;">
+              <span>📄 Milestone 2 Formal Report (PDF)</span>
+              <span style="color: #60a5fa; font-size: 0.75rem;">347 KB &rarr;</span>
+            </a>
+            <a href="/download/presentation-pptx" class="btn-download" style="justify-content: space-between;">
+              <span>📊 Milestone 2 Slide Presentation (PPTX)</span>
+              <span style="color: #a78bfa; font-size: 0.75rem;">408 KB &rarr;</span>
+            </a>
+            <a href="/download/audit-json" class="btn-download" style="justify-content: space-between;">
+              <span>⚙️ Machine-Readable Dataset Audit (JSON)</span>
+              <span style="color: #34d399; font-size: 0.75rem;">Download &rarr;</span>
+            </a>
+            <a href="/download/audit-md" class="btn-download" style="justify-content: space-between;">
+              <span>📋 Human-Readable Quality Audit (Markdown)</span>
+              <span style="color: #facc15; font-size: 0.75rem;">Download &rarr;</span>
+            </a>
+          </div>
         </div>
 
         <div class="card">
-          <div class="card-title">🎓 Deliverables & Quick Links</div>
-          <div class="card-desc">Pre-compiled reports and assessment deliverables ready for viva examination.</div>
+          <div class="card-title">🎓 Mid-Term Viva Quick Reference</div>
+          <div class="card-desc">Top 3 examiner questions and your sharp model answers:</div>
+          
+          <div style="font-size: 0.82rem; margin-bottom: 0.75rem;">
+            <strong style="color: #60a5fa;">Q: Why filter out Pull Requests?</strong><br>
+            <span style="color: #cbd5e1;">A: PRs contain diff summaries and code review checklists. Mixing PRs into issue triage causes severe distribution shift and makes classification artificially trivial.</span>
+          </div>
 
-          <ul style="list-style: none; font-size: 0.9rem;">
-            <li style="padding: 0.6rem 0; border-bottom: 1px solid var(--card-border);">
-              📄 <strong>Formal PDF Report:</strong> <code>reports/milestone_2_report.pdf</code> (347 KB)
-            </li>
-            <li style="padding: 0.6rem 0; border-bottom: 1px solid var(--card-border);">
-              📊 <strong>Presentation Slides:</strong> <code>reports/milestone_2_presentation.pptx</code> (408 KB)
-            </li>
-            <li style="padding: 0.6rem 0; border-bottom: 1px solid var(--card-border);">
-              🧠 <strong>Viva Prep Cheat Sheet:</strong> <code>docs/viva_prep.md</code>
-            </li>
-            <li style="padding: 0.6rem 0; border-bottom: 1px solid var(--card-border);">
-              📋 <strong>Assessment Submission:</strong> <code>docs/milestone_2_assessment_submission.md</code>
-            </li>
-            <li style="padding: 0.6rem 0;">
-              🧪 <strong>Test Suite:</strong> <code>pytest -v tests/</code> (7 passed, 100%)
-            </li>
-          </ul>
+          <div style="font-size: 0.82rem; margin-bottom: 0.75rem;">
+            <strong style="color: #60a5fa;">Q: What is Data Leakage in this project?</strong><br>
+            <span style="color: #cbd5e1;">A: Using post-triage attributes (<code>state: closed</code>, <code>comments</code>, <code>assignee</code>, <code>milestone</code>). Our Feature Allowlist includes ONLY creation-time fields.</span>
+          </div>
+
+          <div style="font-size: 0.82rem;">
+            <strong style="color: #60a5fa;">Q: How do you handle the 45:1 class imbalance?</strong><br>
+            <span style="color: #cbd5e1;">A: Accuracy is misleading (majority class gives 52.8%). We mandate <strong>Macro-F1</strong> and train using cost-sensitive balanced loss weights.</span>
+          </div>
         </div>
 
       </div>
@@ -642,7 +872,7 @@
 
   <!-- Footer -->
   <footer>
-    GitHub Project Issue Classifier &bull; Milestone 2 &bull; Developed by Priyanshu Yadav (S25CSEU0725)
+    GitHub Project Issue Classifier &bull; Milestone 2 Dashboard &bull; Candidate: Priyanshu Yadav (S25CSEU0725)
   </footer>
 
   <script>
@@ -654,45 +884,106 @@
       event.target.classList.add('active');
     }
 
-    // Load sample issues into pills
-    let sampleData = [];
-    async function loadSamples() {
+    // Load verified presets
+    async function loadPresets() {
       try {
-        const res = await fetch('/api/sample-issues');
-        sampleData = await res.json();
-        const container = document.getElementById('samplesContainer');
-        container.innerHTML = '<span style="font-size:0.78rem; color:#94a3b8; align-self:center; margin-right:0.25rem;">Presets:</span>';
-        sampleData.forEach((s, idx) => {
+        const res = await fetch('/api/verified-presets');
+        const presets = await res.json();
+        const row = document.getElementById('presetsRow');
+        presets.forEach(p => {
           const pill = document.createElement('div');
-          pill.className = 'sample-pill';
-          pill.innerText = s.name;
-          pill.onclick = () => populateSample(idx);
-          container.appendChild(pill);
+          pill.className = 'preset-pill';
+          pill.innerHTML = `<span>${p.label}</span>`;
+          pill.title = p.desc;
+          pill.onclick = () => {
+            document.getElementById('ghUrlInput').value = p.url;
+            fetchIssueUrl();
+          };
+          row.appendChild(pill);
         });
-      } catch (err) {
-        console.error('Error loading sample issues:', err);
+      } catch (e) {
+        console.error('Failed to load presets:', e);
       }
     }
 
-    function populateSample(idx) {
-      const s = sampleData[idx];
-      document.getElementById('title').value = s.title;
-      document.getElementById('body').value = s.body;
-      document.getElementById('authorAssociation').value = s.author_association;
-      // Auto submit
-      document.getElementById('submitBtn').click();
+    // Fetch GitHub issue via URL
+    async function fetchIssueUrl() {
+      const url = document.getElementById('ghUrlInput').value.trim();
+      const btn = document.getElementById('btnFetch');
+      const prAlert = document.getElementById('prAlertBox');
+      prAlert.style.display = 'none';
+
+      if (!url) {
+        alert('Please enter a GitHub Issue URL.');
+        return;
+      }
+
+      btn.innerText = '⏳ Ingesting...';
+      btn.disabled = true;
+
+      try {
+        const res = await fetch('/api/fetch-github-issue', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url })
+        });
+        const data = await res.json();
+
+        if (data.status === 'pull_request_filtered') {
+          prAlert.style.display = 'block';
+          document.getElementById('prAlertMessage').innerText = data.message;
+          return;
+        }
+
+        if (data.error) {
+          alert('GitHub Fetch Error: ' + data.error);
+          return;
+        }
+
+        // Populate fields
+        document.getElementById('title').value = data.title || '';
+        document.getElementById('body').value = data.body || '';
+        document.getElementById('authorAssociation').value = data.author_association || 'NONE';
+        document.getElementById('fetchSourceBadge').innerText = data.source;
+
+        // Ground truth
+        const gtClass = data.ground_truth_class || 'UNLABELED';
+        const gtReason = data.ground_truth_reason || 'No source labels';
+        document.getElementById('groundTruthClass').value = `${gtClass} (${gtReason})`;
+
+        // Firewalled metadata
+        const firewallDiv = document.getElementById('firewalledFieldsList');
+        firewallDiv.innerHTML = '';
+        if (data.raw_post_triage_metadata) {
+          for (const [k, v] of Object.entries(data.raw_post_triage_metadata)) {
+            const tag = document.createElement('span');
+            tag.className = 'firewall-tag';
+            tag.innerText = `${k}: ${v} (firewalled)`;
+            firewallDiv.appendChild(tag);
+          }
+        }
+
+        // Auto run classification
+        document.getElementById('btnClassify').click();
+
+      } catch (err) {
+        alert('Fetch error: ' + err.message);
+      } finally {
+        btn.innerText = '⚡ Fetch & Triage';
+        btn.disabled = false;
+      }
     }
 
-    // Submit issue form
+    // Run classification
     document.getElementById('issueForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const title = document.getElementById('title').value.trim();
       const body = document.getElementById('body').value.trim();
       const author_association = document.getElementById('authorAssociation').value;
-      const submitBtn = document.getElementById('submitBtn');
+      const btn = document.getElementById('btnClassify');
 
-      submitBtn.innerText = '⏳ Classifying...';
-      submitBtn.disabled = true;
+      btn.innerText = '⏳ Running Pipeline...';
+      btn.disabled = true;
 
       try {
         const res = await fetch('/api/predict', {
@@ -703,10 +994,7 @@
         const data = await res.json();
 
         if (data.status === 'success') {
-          document.getElementById('placeholderResult').style.display = 'none';
-          document.getElementById('actualResult').style.display = 'block';
-
-          // Predicted Class Badge
+          // Prediction badge
           const badge = document.getElementById('predictedClass');
           badge.className = 'result-badge badge-' + data.prediction;
           badge.innerText = data.prediction;
@@ -725,15 +1013,14 @@
             prio.style.color = '#fbbf24';
           }
 
-          // Confidence meter
+          // Confidence
           document.getElementById('confidencePct').innerText = data.confidence + '%';
-          document.getElementById('progressFill').style.width = data.confidence + '%';
 
-          // Probabilities list
+          // Probabilities
           const probList = document.getElementById('probList');
           probList.innerHTML = '';
-          const sortedClasses = Object.entries(data.probabilities).sort((a,b) => b[1] - a[1]);
-          sortedClasses.forEach(([cls, p]) => {
+          const sorted = Object.entries(data.probabilities).sort((a,b) => b[1] - a[1]);
+          sorted.forEach(([cls, p]) => {
             const pct = (p * 100).toFixed(1);
             const row = document.createElement('div');
             row.className = 'prob-item';
@@ -748,28 +1035,30 @@
           });
 
           // Routing
-          document.getElementById('routingDest').innerHTML = `${data.routing_area} &rarr; <span style="font-family:monospace; color:#93c5fd;">${data.routing_team}</span>`;
+          document.getElementById('routingDest').innerHTML = `${data.routing_area} &rarr; <span style="font-family: monospace; color: #93c5fd;">${data.routing_team}</span>`;
 
           // Keywords
-          const kwContainer = document.getElementById('keywordsList');
-          kwContainer.innerHTML = '';
+          const kwDiv = document.getElementById('keywordsList');
+          kwDiv.innerHTML = '';
           data.keywords.forEach(kw => {
             const tag = document.createElement('span');
             tag.className = 'meta-tag';
             tag.innerText = kw;
-            kwContainer.appendChild(tag);
+            kwDiv.appendChild(tag);
           });
         }
       } catch (err) {
         alert('Classification failed: ' + err.message);
       } finally {
-        submitBtn.innerText = '⚡ Run Real-Time Classification';
-        submitBtn.disabled = false;
+        btn.innerText = '⚡ Classify With Milestone 2 Baseline Model';
+        btn.disabled = false;
       }
     });
 
-    // Initialize
-    loadSamples();
+    // Initialize presets on page load
+    loadPresets();
+    // Auto-fetch default preset
+    setTimeout(() => { fetchIssueUrl(); }, 300);
   </script>
 </body>
 </html>
