@@ -147,3 +147,4 @@ All 7 tests passed with zero failures.
 2. **Baseline Classifiers:** Train Multinomial Naive Bayes and Logistic Regression baselines.
 3. **Class Imbalance Mitigation:** Compare balanced class weights (`class_weight='balanced'`) vs. SMOTE oversampling.
 4. **Evaluation:** Evaluate models using 5-fold Stratified Cross-Validation reporting Macro-F1 and confusion matrices.
+

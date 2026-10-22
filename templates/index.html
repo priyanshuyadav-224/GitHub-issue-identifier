@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GitHub Project Issue Classifier | AI Triage System</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --card-border: #334155;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+      --bug: #ef4444;
+      --feature: #3b82f6;
+      --question: #f59e0b;
+      --docs: #10b981;
+      --other: #8b5cf6;
+      --radius: 12px;
+      --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Header */
+    header {
+      background: #0b1120;
+      border-bottom: 1px solid var(--card-border);
+      padding: 1rem 2rem;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      backdrop-filter: blur(8px);
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .brand-icon {
+      width: 38px;
+      height: 38px;
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 1.2rem;
+    }
+    .brand-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    .brand-sub {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+    .nav-tabs {
+      display: flex;
+      gap: 0.5rem;
+      background: #1e293b;
+      padding: 0.25rem;
+      border-radius: 10px;
+      border: 1px solid var(--card-border);
+    }
+    .nav-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 0.5rem 1rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .nav-btn.active {
+      background: var(--primary);
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4);
+    }
+
+    /* Container */
+    .container {
+      max-width: 1280px;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+      flex: 1;
+      width: 100%;
+    }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* Top stats banner */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .stat-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      box-shadow: var(--shadow);
+    }
+    .stat-val {
+      font-size: 1.75rem;
+      font-weight: 800;
+      color: #60a5fa;
+      letter-spacing: -0.03em;
+    }
+    .stat-lbl {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-weight: 600;
+      margin-top: 0.25rem;
+    }
+
+    /* Grid for live classifier */
+    .classifier-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 2rem;
+    }
+    @media (max-width: 960px) {
+      .classifier-grid { grid-template-columns: 1fr; }
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      padding: 1.75rem;
+      box-shadow: var(--shadow);
+    }
+    .card-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .card-desc {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 1.5rem;
+    }
+
+    /* Sample selector */
+    .sample-pill-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .sample-pill {
+      background: #0f172a;
+      border: 1px solid var(--card-border);
+      color: #cbd5e1;
+      padding: 0.4rem 0.8rem;
+      font-size: 0.78rem;
+      font-weight: 500;
+      border-radius: 9999px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .sample-pill:hover {
+      background: #334155;
+      border-color: #64748b;
+      color: #fff;
+    }
+
+    /* Form elements */
+    .form-group {
+      margin-bottom: 1.25rem;
+    }
+    label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 0.4rem;
+      color: #e2e8f0;
+    }
+    input[type="text"], textarea, select {
+      width: 100%;
+      background: #0f172a;
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      color: #fff;
+      font-family: inherit;
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    input[type="text"]:focus, textarea:focus, select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+    }
+    textarea {
+      resize: vertical;
+      min-height: 140px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+    }
+
+    .btn-submit {
+      width: 100%;
+      background: linear-gradient(135deg, #2563eb, #3b82f6);
+      color: #fff;
+      border: none;
+      padding: 0.9rem;
+      font-size: 1rem;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: transform 0.1s, box-shadow 0.2s;
+      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);
+    }
+    .btn-submit:hover {
+      background: linear-gradient(135deg, #1d4ed8, #2563eb);
+      box-shadow: 0 6px 20px rgba(37, 99, 235, 0.6);
+    }
+    .btn-submit:active { transform: translateY(1px); }
+
+    /* Results Card */
+    .result-badge {
+      display: inline-block;
+      padding: 0.4rem 1.2rem;
+      font-size: 1.15rem;
+      font-weight: 800;
+      border-radius: 9999px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .badge-BUG { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid #ef4444; }
+    .badge-FEATURE { background: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid #3b82f6; }
+    .badge-QUESTION { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid #f59e0b; }
+    .badge-DOCUMENTATION { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid #10b981; }
+    .badge-OTHER { background: rgba(139, 92, 246, 0.2); color: #a78bfa; border: 1px solid #8b5cf6; }
+
+    .confidence-meter {
+      margin: 1.5rem 0;
+    }
+    .confidence-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+    .progress-bar {
+      height: 10px;
+      background: #0f172a;
+      border-radius: 9999px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #3b82f6, #10b981);
+      width: 0%;
+      transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Breakdown list */
+    .prob-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 0.6rem;
+      font-size: 0.8rem;
+    }
+    .prob-name { width: 120px; font-weight: 600; }
+    .prob-bar-container { flex: 1; height: 6px; background: #0f172a; border-radius: 999px; overflow: hidden; }
+    .prob-bar { height: 100%; background: #64748b; }
+    .prob-val { width: 45px; text-align: right; font-family: monospace; }
+
+    .meta-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-top: 1rem;
+    }
+    .meta-tag {
+      background: #0f172a;
+      border: 1px solid var(--card-border);
+      padding: 0.25rem 0.6rem;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-family: 'JetBrains Mono', monospace;
+      color: #93c5fd;
+    }
+
+    .routing-box {
+      margin-top: 1.25rem;
+      padding: 1rem;
+      background: #0f172a;
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+    }
+    .routing-title {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-weight: 700;
+      margin-bottom: 0.25rem;
+    }
+    .routing-dest {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #f1f5f9;
+    }
+
+    /* Gallery */
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+      gap: 1.5rem;
+    }
+    .gallery-item {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+    }
+    .gallery-item img {
+      width: 100%;
+      height: 220px;
+      object-fit: cover;
+      background: #0f172a;
+      border-bottom: 1px solid var(--card-border);
+    }
+    .gallery-info {
+      padding: 1rem;
+    }
+    .gallery-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-bottom: 0.25rem;
+    }
+    .gallery-desc {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid var(--card-border);
+      padding: 1.5rem 2rem;
+      text-align: center;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      background: #0b1120;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Header -->
+  <header>
+    <div class="brand">
+      <div class="brand-icon">⚡</div>
+      <div>
+        <div class="brand-title">GitHub Project Issue Classifier</div>
+        <div class="brand-sub">Priyanshu Yadav (S25CSEU0725) | Batch-25</div>
+      </div>
+    </div>
+    <div class="nav-tabs">
+      <button class="nav-btn active" onclick="switchTab('classifier')">Live Classifier</button>
+      <button class="nav-btn" onclick="switchTab('dataset')">Dataset & EDA</button>
+      <button class="nav-btn" onclick="switchTab('viva')">Viva & Docs</button>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <div class="container">
+
+    <!-- KPI Stats Banner -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-val">7,540</div>
+        <div class="stat-lbl">Raw Records Ingested</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val">4,325</div>
+        <div class="stat-lbl">Pull Requests Filtered</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val">3,115</div>
+        <div class="stat-lbl">Pure Issues Audited</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val">1,459</div>
+        <div class="stat-lbl">Clean Supervised Targets</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val">45:1</div>
+        <div class="stat-lbl">Class Imbalance (BUG/OTHER)</div>
+      </div>
+    </div>
+
+    <!-- TAB 1: Live Classifier -->
+    <div id="tab-classifier" class="tab-content active">
+      <div class="classifier-grid">
+        
+        <!-- Left Column: Input Form -->
+        <div class="card">
+          <div class="card-title">📝 Submit or Test GitHub Issue</div>
+          <div class="card-desc">Type an issue or select a preset real-world test case to test classification in real time.</div>
+
+          <div class="sample-pill-container" id="samplesContainer">
+            <!-- Sample pills loaded via JS -->
+          </div>
+
+          <form id="issueForm">
+            <div class="form-group">
+              <label for="title">Issue Title <span style="color:#ef4444">*</span></label>
+              <input type="text" id="title" placeholder="e.g. TypeError: 'generator' object is not subscriptable" required>
+            </div>
+
+            <div class="form-group">
+              <label for="body">Issue Description / Body</label>
+              <textarea id="body" placeholder="Describe the behavior, error logs, or request details..."></textarea>
+            </div>
+
+            <div class="form-group">
+              <label for="authorAssociation">Author Relationship Context</label>
+              <select id="authorAssociation">
+                <option value="NONE">NONE (Casual / External User)</option>
+                <option value="CONTRIBUTOR">CONTRIBUTOR (Submitted previous PRs)</option>
+                <option value="MEMBER">MEMBER (Repository Core Maintainer)</option>
+                <option value="COLLABORATOR">COLLABORATOR</option>
+              </select>
+            </div>
+
+            <button type="submit" class="btn-submit" id="submitBtn">⚡ Run Real-Time Classification</button>
+          </form>
+        </div>
+
+        <!-- Right Column: Live Results -->
+        <div class="card" id="resultsCard">
+          <div class="card-title">🎯 Classification Output</div>
+          <div class="card-desc">Predicted using sublinear TF-IDF + Logistic Regression with cost-sensitive class weights.</div>
+
+          <div id="placeholderResult" style="text-align: center; padding: 3rem 1rem; color: var(--text-muted);">
+            <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🔍</div>
+            <div>Submit an issue or click a preset sample above to see live ML predictions.</div>
+          </div>
+
+          <div id="actualResult" style="display: none;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <span class="result-badge" id="predictedClass">BUG</span>
+              </div>
+              <div id="priorityBadge" style="font-size: 0.8rem; font-weight: 700; padding: 0.25rem 0.75rem; border-radius: 6px; background: rgba(239,68,68,0.2); color: #f87171;">
+                HIGH PRIORITY
+              </div>
+            </div>
+
+            <div class="confidence-meter">
+              <div class="confidence-label">
+                <span>Model Confidence</span>
+                <span id="confidencePct" style="color: #60a5fa;">92.4%</span>
+              </div>
+              <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+              </div>
+            </div>
+
+            <div style="font-size: 0.85rem; font-weight: 600; margin-bottom: 0.75rem; color: #cbd5e1;">Class Probability Distribution</div>
+            <div id="probList"></div>
+
+            <div class="routing-box">
+              <div class="routing-title">Suggested Routing & Team</div>
+              <div class="routing-dest" id="routingDest">Core Framework &rarr; team-core-triage</div>
+            </div>
+
+            <div style="margin-top: 1.25rem;">
+              <div style="font-size: 0.8rem; font-weight: 600; color: #94a3b8;">Key Influential Tokens Detected</div>
+              <div class="meta-tags" id="keywordsList"></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- TAB 2: Dataset & EDA Gallery -->
+    <div id="tab-dataset" class="tab-content">
+      <div style="margin-bottom: 1.5rem;">
+        <h2 style="font-size: 1.4rem; font-weight: 700;">Exploratory Data Analysis (EDA) Gallery</h2>
+        <p style="color: var(--text-muted); font-size: 0.9rem;">11 Publication-grade figures generated from the actual 7,540 raw and 1,459 supervised GitHub issues.</p>
+      </div>
+
+      <div class="gallery-grid">
+        <div class="gallery-item">
+          <img src="/reports/figures/fig01_filtering_pipeline_counts.png" alt="Filtering Pipeline">
+          <div class="gallery-info">
+            <div class="gallery-title">1. Pipeline Ingestion Funnel</div>
+            <div class="gallery-desc">Raw (7,540) &rarr; Dedup (7,440) &rarr; Pure Issues (3,115) &rarr; Supervised (1,459).</div>
+          </div>
+        </div>
+
+        <div class="gallery-item">
+          <img src="/reports/figures/fig02_class_frequency_imbalance.png" alt="Class Imbalance">
+          <div class="gallery-info">
+            <div class="gallery-title">2. Target Class Imbalance</div>
+            <div class="gallery-desc">45:1 Imbalance ratio between BUG (771) and OTHER (17). Mandates Macro-F1.</div>
+          </div>
+        </div>
+
+        <div class="gallery-item">
+          <img src="/reports/figures/fig09_ngram_frequency_analysis.png" alt="N-Grams">
+          <div class="gallery-info">
+            <div class="gallery-title">3. Linguistic N-Grams</div>
+            <div class="gallery-desc">Bugs dominated by "traceback call"; Features by "add support".</div>
+          </div>
+        </div>
+
+        <div class="gallery-item">
+          <img src="/reports/figures/fig07_text_length_distributions.png" alt="Text Lengths">
+          <div class="gallery-info">
+            <div class="gallery-title">4. Text Length Distributions</div>
+            <div class="gallery-desc">Gaussian title length (67 chars); right-skewed body word count (median 98 words).</div>
+          </div>
+        </div>
+
+        <div class="gallery-item">
+          <img src="/reports/figures/fig08_issue_creation_timeline.png" alt="Creation Timeline">
+          <div class="gallery-info">
+            <div class="gallery-title">5. Inflow Timeline (2020-2025)</div>
+            <div class="gallery-desc">5-year arrival trends showing peak maintainer activity in 2022-2023.</div>
+          </div>
+        </div>
+
+        <div class="gallery-item">
+          <img src="/reports/figures/fig06_missingness_analysis.png" alt="Missingness">
+          <div class="gallery-info">
+            <div class="gallery-title">6. Missingness Audit</div>
+            <div class="gallery-desc">Core text has 0% missing titles; post-triage fields are 89-99% missing.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: Viva & Architecture Reference -->
+    <div id="tab-viva" class="tab-content">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+        
+        <div class="card">
+          <div class="card-title">🛡️ Data Leakage Firewall</div>
+          <div class="card-desc">Features available at submission vs firewalled post-triage attributes.</div>
+          
+          <table style="width: 100%; font-size: 0.85rem; border-collapse: collapse;">
+            <thead>
+              <tr style="border-bottom: 1px solid var(--card-border); color: #cbd5e1;">
+                <th style="padding: 0.5rem; text-align: left;">Allowed Features (Creation-Time)</th>
+                <th style="padding: 0.5rem; text-align: left;">Firewalled (Leaky Post-Triage)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="padding: 0.5rem; color: #34d399;">✓ clean_title (Author input)</td>
+                <td style="padding: 0.5rem; color: #f87171;">✗ state (closed / open)</td>
+              </tr>
+              <tr>
+                <td style="padding: 0.5rem; color: #34d399;">✓ clean_body (Author input)</td>
+                <td style="padding: 0.5rem; color: #f87171;">✗ closed_at / closed_by</td>
+              </tr>
+              <tr>
+                <td style="padding: 0.5rem; color: #34d399;">✓ author_association (Role)</td>
+                <td style="padding: 0.5rem; color: #f87171;">✗ comments count & text</td>
+              </tr>
+              <tr>
+                <td style="padding: 0.5rem; color: #34d399;">✓ created_at (Timestamp)</td>
+                <td style="padding: 0.5rem; color: #f87171;">✗ assignee / assignees</td>
+              </tr>
+              <tr>
+                <td style="padding: 0.5rem; color: #34d399;">✓ word & char lengths</td>
+                <td style="padding: 0.5rem; color: #f87171;">✗ milestone & reactions</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="card">
+          <div class="card-title">🎓 Deliverables & Quick Links</div>
+          <div class="card-desc">Pre-compiled reports and assessment deliverables ready for viva examination.</div>
+
+          <ul style="list-style: none; font-size: 0.9rem;">
+            <li style="padding: 0.6rem 0; border-bottom: 1px solid var(--card-border);">
+              📄 <strong>Formal PDF Report:</strong> <code>reports/milestone_2_report.pdf</code> (347 KB)
+            </li>
+            <li style="padding: 0.6rem 0; border-bottom: 1px solid var(--card-border);">
+              📊 <strong>Presentation Slides:</strong> <code>reports/milestone_2_presentation.pptx</code> (408 KB)
+            </li>
+            <li style="padding: 0.6rem 0; border-bottom: 1px solid var(--card-border);">
+              🧠 <strong>Viva Prep Cheat Sheet:</strong> <code>docs/viva_prep.md</code>
+            </li>
+            <li style="padding: 0.6rem 0; border-bottom: 1px solid var(--card-border);">
+              📋 <strong>Assessment Submission:</strong> <code>docs/milestone_2_assessment_submission.md</code>
+            </li>
+            <li style="padding: 0.6rem 0;">
+              🧪 <strong>Test Suite:</strong> <code>pytest -v tests/</code> (7 passed, 100%)
+            </li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    GitHub Project Issue Classifier &bull; Milestone 2 &bull; Developed by Priyanshu Yadav (S25CSEU0725)
+  </footer>
+
+  <script>
+    // Tab switching
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+      document.getElementById('tab-' + tabId).classList.add('active');
+      event.target.classList.add('active');
+    }
+
+    // Load sample issues into pills
+    let sampleData = [];
+    async function loadSamples() {
+      try {
+        const res = await fetch('/api/sample-issues');
+        sampleData = await res.json();
+        const container = document.getElementById('samplesContainer');
+        container.innerHTML = '<span style="font-size:0.78rem; color:#94a3b8; align-self:center; margin-right:0.25rem;">Presets:</span>';
+        sampleData.forEach((s, idx) => {
+          const pill = document.createElement('div');
+          pill.className = 'sample-pill';
+          pill.innerText = s.name;
+          pill.onclick = () => populateSample(idx);
+          container.appendChild(pill);
+        });
+      } catch (err) {
+        console.error('Error loading sample issues:', err);
+      }
+    }
+
+    function populateSample(idx) {
+      const s = sampleData[idx];
+      document.getElementById('title').value = s.title;
+      document.getElementById('body').value = s.body;
+      document.getElementById('authorAssociation').value = s.author_association;
+      // Auto submit
+      document.getElementById('submitBtn').click();
+    }
+
+    // Submit issue form
+    document.getElementById('issueForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const title = document.getElementById('title').value.trim();
+      const body = document.getElementById('body').value.trim();
+      const author_association = document.getElementById('authorAssociation').value;
+      const submitBtn = document.getElementById('submitBtn');
+
+      submitBtn.innerText = '⏳ Classifying...';
+      submitBtn.disabled = true;
+
+      try {
+        const res = await fetch('/api/predict', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ title, body, author_association })
+        });
+        const data = await res.json();
+
+        if (data.status === 'success') {
+          document.getElementById('placeholderResult').style.display = 'none';
+          document.getElementById('actualResult').style.display = 'block';
+
+          // Predicted Class Badge
+          const badge = document.getElementById('predictedClass');
+          badge.className = 'result-badge badge-' + data.prediction;
+          badge.innerText = data.prediction;
+
+          // Priority
+          const prio = document.getElementById('priorityBadge');
+          prio.innerText = data.priority + ' PRIORITY';
+          if (data.priority === 'HIGH') {
+            prio.style.background = 'rgba(239,68,68,0.2)';
+            prio.style.color = '#f87171';
+          } else if (data.priority === 'LOW') {
+            prio.style.background = 'rgba(16,185,129,0.2)';
+            prio.style.color = '#34d399';
+          } else {
+            prio.style.background = 'rgba(245,158,11,0.2)';
+            prio.style.color = '#fbbf24';
+          }
+
+          // Confidence meter
+          document.getElementById('confidencePct').innerText = data.confidence + '%';
+          document.getElementById('progressFill').style.width = data.confidence + '%';
+
+          // Probabilities list
+          const probList = document.getElementById('probList');
+          probList.innerHTML = '';
+          const sortedClasses = Object.entries(data.probabilities).sort((a,b) => b[1] - a[1]);
+          sortedClasses.forEach(([cls, p]) => {
+            const pct = (p * 100).toFixed(1);
+            const row = document.createElement('div');
+            row.className = 'prob-item';
+            row.innerHTML = `
+              <div class="prob-name">${cls}</div>
+              <div class="prob-bar-container">
+                <div class="prob-bar" style="width: ${pct}%; background: ${cls === data.prediction ? '#3b82f6' : '#475569'};"></div>
+              </div>
+              <div class="prob-val">${pct}%</div>
+            `;
+            probList.appendChild(row);
+          });
+
+          // Routing
+          document.getElementById('routingDest').innerHTML = `${data.routing_area} &rarr; <span style="font-family:monospace; color:#93c5fd;">${data.routing_team}</span>`;
+
+          // Keywords
+          const kwContainer = document.getElementById('keywordsList');
+          kwContainer.innerHTML = '';
+          data.keywords.forEach(kw => {
+            const tag = document.createElement('span');
+            tag.className = 'meta-tag';
+            tag.innerText = kw;
+            kwContainer.appendChild(tag);
+          });
+        }
+      } catch (err) {
+        alert('Classification failed: ' + err.message);
+      } finally {
+        submitBtn.innerText = '⚡ Run Real-Time Classification';
+        submitBtn.disabled = false;
+      }
+    });
+
+    // Initialize
+    loadSamples();
+  </script>
+</body>
+</html>

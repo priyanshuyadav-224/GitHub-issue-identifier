@@ -155,3 +155,4 @@ with open("c:/Projects/notebooks/milestone_2_eda.ipynb", "w", encoding="utf-8") 
     json.dump(nb, f, indent=2)
 
 print("Created notebooks/milestone_2_eda.ipynb successfully.")
+

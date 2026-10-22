@@ -260,3 +260,4 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     run_audit(args.input, args.output_json, args.output_md)
+

@@ -345,3 +345,4 @@ def generate_pptx(output_pptx_path: str):
 if __name__ == "__main__":
     generate_pdf("c:/Projects/reports/milestone_2_report.pdf")
     generate_pptx("c:/Projects/reports/milestone_2_presentation.pptx")
+

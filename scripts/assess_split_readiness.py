@@ -145,3 +145,4 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     assess_splits(args.input, args.output_report)
+

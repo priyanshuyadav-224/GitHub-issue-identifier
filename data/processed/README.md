@@ -64,3 +64,4 @@ The following attributes accumulate **after** issue submission during triage and
 - **`UNLABELED` (1,493 issues, 47.93%):** Issues submitted without maintainer tags. Reserved for unsupervised discovery (K-Means/PCA in Milestone 6) and active learning.
 - **`UNMAPPED` (129 issues, 4.14%):** Issues tagged with only triage or component labels (`good first issue`, `dataset-viewer`, `vision`) without an issue-type tag.
 - **`CONFLICTING` (34 issues, 1.09%):** Issues assigned contradictory labels from multiple classes (e.g. `[bug, enhancement]`).
+
