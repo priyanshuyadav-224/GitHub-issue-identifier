@@ -13,7 +13,17 @@ This project develops an interpretable, reproducible machine learning system tha
 
 ---
 
-## 2. Statistical Machine Learning Benchmarks (Test Set N = 292)
+## 2. Public Project Links & Open Demonstration
+
+- **GitHub Repository (Public):** [https://github.com/priyanshuyadav-224/GitHub-issue-identifier](https://github.com/priyanshuyadav-224/GitHub-issue-identifier)
+- **Project Demonstration Video (Direct Open MP4):** [https://github.com/priyanshuyadav-224/GitHub-issue-identifier/releases/download/v1.0.0/project_demonstration_walkthrough.mp4](https://github.com/priyanshuyadav-224/GitHub-issue-identifier/releases/download/v1.0.0/project_demonstration_walkthrough.mp4)
+- **Public Release Page:** [https://github.com/priyanshuyadav-224/GitHub-issue-identifier/releases/tag/v1.0.0](https://github.com/priyanshuyadav-224/GitHub-issue-identifier/releases/tag/v1.0.0)
+- **Technical Report (PDF, 0.66 MB):** [https://github.com/priyanshuyadav-224/GitHub-issue-identifier/releases/download/v1.0.0/S25CSEU0725_Milestone_3_Report.pdf](https://github.com/priyanshuyadav-224/GitHub-issue-identifier/releases/download/v1.0.0/S25CSEU0725_Milestone_3_Report.pdf)
+- **Project Presentation (PPTX, 14 Slides):** [https://github.com/priyanshuyadav-224/GitHub-issue-identifier/releases/download/v1.0.0/S25CSEU0725_Milestone_3_Presentation.pptx](https://github.com/priyanshuyadav-224/GitHub-issue-identifier/releases/download/v1.0.0/S25CSEU0725_Milestone_3_Presentation.pptx)
+
+---
+
+## 3. Statistical Machine Learning Benchmarks (Test Set N = 292)
 
 All models were evaluated on an identical held-out test partition (stratified 80/20 train/test split, random seed = 42) across 5 target classes (`BUG`, `FEATURE`, `QUESTION`, `DOCUMENTATION`, `OTHER`):
 
@@ -32,7 +42,7 @@ All models were evaluated on an identical held-out test partition (stratified 80
 
 ---
 
-## 3. Unsupervised Latent Topic Discovery (K-Means, k = 5)
+## 4. Unsupervised Latent Topic Discovery (K-Means, k = 5)
 Applied to 1,493 unlabeled historical issues to uncover latent problem categories without supervision:
 
 - **Cluster 0 (Data Loaders & Streaming):** `dataset`, `request`, `add`, `feature`, `gem`, `datasets`, `stream`, `loader`
@@ -43,7 +53,7 @@ Applied to 1,493 unlabeled historical issues to uncover latent problem categorie
 
 ---
 
-## 4. Project Directory Structure
+## 5. Project Directory Structure
 
 ```text
 ├── data/
@@ -73,11 +83,13 @@ Applied to 1,493 unlabeled historical issues to uncover latent problem categorie
 │   ├── preprocess_dataset.py                   # Preprocessing & leakage firewall
 │   ├── run_eda.py                              # Visualizations & statistics generator
 │   ├── train_and_evaluate_models.py            # Training, cross-validation & benchmark suite
-│   └── generate_milestone3_artifacts.py        # PDF report & PPTX slide deck generator
+│   ├── generate_milestone3_artifacts.py        # PDF report & PPTX slide deck generator
+│   └── generate_demonstration_video.py         # 1080p demonstration video generator
 ├── templates/
 │   └── index.html                              # Enterprise triage & benchmark dashboard
 ├── tests/
-│   └── test_data_pipeline.py                   # Automated pipeline test suite (7 passed)
+│   ├── test_data_pipeline.py                   # Automated pipeline test suite (7 passed)
+│   └── test_model_pipeline.py                  # Multi-model inference test suite (5 passed)
 ├── app.py                                      # Production Flask REST API & web service
 ├── .gitignore                                  # Git exclusion configuration
 └── README.md                                   # Comprehensive project documentation
@@ -85,7 +97,7 @@ Applied to 1,493 unlabeled historical issues to uncover latent problem categorie
 
 ---
 
-## 5. Target Leakage Prevention Architecture
+## 6. Target Leakage Prevention Architecture
 
 To guarantee scientific validity, the model only consumes attributes that exist **at the exact millisecond the author submits the issue**:
 
@@ -99,11 +111,11 @@ To guarantee scientific validity, the model only consumes attributes that exist 
 
 ---
 
-## 6. Quickstart: Reproducing the Entire Pipeline
+## 7. Quickstart: Reproducing the Entire Pipeline
 
 ### 1. Environment Setup
 ```powershell
-pip install pandas numpy pyarrow scikit-learn matplotlib seaborn pytest reportlab python-pptx flask
+pip install pandas numpy pyarrow scikit-learn matplotlib seaborn pytest reportlab python-pptx flask opencv-python
 ```
 
 ### 2. Preprocess Dataset & Apply Target Leakage Firewall
@@ -122,7 +134,7 @@ python scripts/train_and_evaluate_models.py
 ```powershell
 pytest -v tests/
 ```
-*Verification: 7 passed, 100% test success.*
+*Verification: 12 passed, 100% test success.*
 
 ### 5. Launch Interactive Production Web Console
 ```powershell

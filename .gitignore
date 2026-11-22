@@ -61,3 +61,7 @@ htmlcov/
 # Operating System
 .DS_Store
 Thumbs.db
+
+# Video Walkthroughs
+*.mp4
+
