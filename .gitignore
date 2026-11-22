@@ -29,6 +29,17 @@ data/raw/*.parquet
 data/processed/*.parquet
 data/processed/*.csv
 
+# Serialized Model Artifacts
+models/*.joblib
+
+# Viva, Internal Assessments & Exam Preparation
+*viva*
+*assessment*
+*checklist*
+docs/viva_prep.md
+docs/milestone_2_assessment_submission.md
+docs/milestone_2_checklist.md
+
 # Jupyter Notebook
 .ipynb_checkpoints
 

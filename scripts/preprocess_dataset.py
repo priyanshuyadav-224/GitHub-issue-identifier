@@ -1,16 +1,3 @@
-"""
-preprocess_dataset.py
-=====================
-Milestone 2 - Task 2, Task 4, and Task 5: Ingestion, Target Definition, and Preprocessing
-Author: Priyanshu Yadav (S25CSEU0725)
-Project: GitHub Project Issue Classifier
-
-This script ingests raw GitHub issue data, applies deterministic cleaning,
-removes duplicate records and pull requests, prevents target leakage by strictly
-separating creation-time features from post-triage metadata, maps source labels
-to an explicit 5-class target taxonomy (BUG, FEATURE, QUESTION, DOCUMENTATION, OTHER),
-and outputs both the full cleaned issue dataset and the supervised training dataset.
-"""
 
 import os
 import re

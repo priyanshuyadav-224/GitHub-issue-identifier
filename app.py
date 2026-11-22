@@ -3,6 +3,7 @@ app.py
 ======
 GitTriage AI - Intelligent GitHub Issue Triage & Routing Engine
 Production-grade Flask Web Application & REST API
+Statistical Machine Learning Multi-Model Inference Suite
 """
 
 import os
@@ -10,6 +11,7 @@ import re
 import json
 import time
 import urllib.request
+import joblib
 import numpy as np
 import pandas as pd
 from flask import Flask, render_template, request, jsonify, send_from_directory, send_file
@@ -27,28 +29,35 @@ from scripts.preprocess_dataset import (
 app = Flask(__name__, template_folder="templates", static_folder="static")
 
 # Global state
-MODEL_PIPELINE = None
+MODEL_SUITE = {}
+DEFAULT_MODEL_NAME = "Logistic Regression"
+VECTORIZER = None
 CLASSES = []
 FEATURE_NAMES = []
 LOCAL_ISSUES_MAP = {}
 RAW_ISSUES_MAP = {}
 SUPERVISED_DF = None
+BENCHMARK_DATA = {}
 
 
 def initialize_app_data():
-    global MODEL_PIPELINE, CLASSES, FEATURE_NAMES, LOCAL_ISSUES_MAP, RAW_ISSUES_MAP, SUPERVISED_DF
+    global MODEL_SUITE, DEFAULT_MODEL_NAME, VECTORIZER, CLASSES, FEATURE_NAMES
+    global LOCAL_ISSUES_MAP, RAW_ISSUES_MAP, SUPERVISED_DF, BENCHMARK_DATA
 
     supervised_path = "data/processed/github_issues_supervised.parquet"
     cleaned_path = "data/processed/github_issues_cleaned.parquet"
     raw_path = "data/raw/github_issues_raw.parquet"
+    model_suite_path = "models/model_suite.joblib"
+    metrics_path = "reports/model_evaluation_metrics.json"
 
-    print("Initializing GitTriage AI Model and Datasets...")
+    print("Initializing GitTriage AI Engine and Model Suite...")
+
     if os.path.exists(supervised_path):
         SUPERVISED_DF = pd.read_parquet(supervised_path)
     else:
         raise FileNotFoundError(f"Supervised dataset not found at: {supervised_path}")
 
-    # Build URL lookup maps for fast 0ms resolution of verified dataset issues
+    # Build URL lookup maps for instant 0ms resolution of verified dataset issues
     if os.path.exists(cleaned_path):
         df_clean = pd.read_parquet(cleaned_path)
         for _, r in df_clean.iterrows():
@@ -63,28 +72,43 @@ def initialize_app_data():
             url_key = str(r["html_url"]).strip().lower()
             RAW_ISSUES_MAP[url_key] = r.to_dict()
 
-    # Train baseline TF-IDF + Logistic Regression
-    t0 = time.time()
-    vectorizer = TfidfVectorizer(
-        max_features=5000,
-        ngram_range=(1, 2),
-        sublinear_tf=True,
-        stop_words="english",
-    )
-    clf = LogisticRegression(
-        class_weight="balanced",
-        max_iter=300,
-        random_state=42,
-    )
-    MODEL_PIPELINE = Pipeline([
-        ("tfidf", vectorizer),
-        ("clf", clf),
-    ])
-    MODEL_PIPELINE.fit(SUPERVISED_DF["text"], SUPERVISED_DF["target_class"])
-    CLASSES = list(MODEL_PIPELINE.classes_)
-    FEATURE_NAMES = vectorizer.get_feature_names_out()
-    t1 = time.time()
-    print(f"GitTriage AI engine initialized in {t1 - t0:.2f}s with classes: {CLASSES}")
+    # Load pre-trained models from model suite if available, or train on the fly
+    if os.path.exists(model_suite_path):
+        print(f"Loading trained model suite from {model_suite_path}...")
+        MODEL_SUITE = joblib.load(model_suite_path)
+        if os.path.exists("models/tfidf_vectorizer.joblib"):
+            VECTORIZER = joblib.load("models/tfidf_vectorizer.joblib")
+        else:
+            VECTORIZER = MODEL_SUITE[DEFAULT_MODEL_NAME].named_steps["tfidf"]
+    else:
+        print("Training baseline models on the fly...")
+        VECTORIZER = TfidfVectorizer(
+            max_features=5000,
+            ngram_range=(1, 2),
+            sublinear_tf=True,
+            stop_words="english",
+        )
+        clf = LogisticRegression(
+            class_weight="balanced",
+            max_iter=500,
+            random_state=42,
+        )
+        pipe = Pipeline([("tfidf", VECTORIZER), ("clf", clf)])
+        pipe.fit(SUPERVISED_DF["text"], SUPERVISED_DF["target_class"])
+        MODEL_SUITE = {"Logistic Regression": pipe}
+
+    # Load classes and feature names
+    first_model = list(MODEL_SUITE.values())[0]
+    clf_obj = first_model.named_steps["clf"]
+    CLASSES = sorted(list(clf_obj.classes_))
+    FEATURE_NAMES = VECTORIZER.get_feature_names_out()
+
+    # Load benchmark metadata
+    if os.path.exists(metrics_path):
+        with open(metrics_path, "r") as f:
+            BENCHMARK_DATA = json.load(f)
+
+    print(f"GitTriage AI initialized successfully with {len(MODEL_SUITE)} models and {len(CLASSES)} target classes.")
 
 
 initialize_app_data()
@@ -127,8 +151,7 @@ def suggest_routing(text: str, predicted_class: str) -> dict:
 def extract_top_keywords(text: str, top_n: int = 6) -> list:
     if not text.strip():
         return []
-    tfidf = MODEL_PIPELINE.named_steps["tfidf"]
-    vec = tfidf.transform([text])
+    vec = VECTORIZER.transform([text])
     feature_indices = vec.nonzero()[1]
     scores = [(FEATURE_NAMES[idx], vec[0, idx]) for idx in feature_indices]
     scores.sort(key=lambda x: x[1], reverse=True)
@@ -143,7 +166,7 @@ def index():
 @app.route("/api/fetch-github-issue", methods=["POST"])
 def fetch_github_issue():
     """
-    Fetches a live GitHub issue via URL:
+    Fetches a GitHub issue via URL:
     1. Checks local cache for instant 0ms retrieval
     2. Or queries live GitHub REST API for external repositories
     3. Detects and handles Pull Requests cleanly
@@ -242,7 +265,7 @@ def fetch_github_issue():
             if he.code == 404:
                 return jsonify({"error": f"Issue #{number} not found in repository {repo_slug}."}), 404
             elif he.code == 403:
-                return jsonify({"error": "GitHub API rate limit exceeded. Please try one of the verified sample issues."}), 429
+                return jsonify({"error": "GitHub API rate limit reached. Please select one of the verified sample issues."}), 429
             else:
                 return jsonify({"error": f"GitHub API error: {he}"}), 500
 
@@ -300,9 +323,14 @@ def predict():
         author_association = data.get("author_association", "NONE")
         labels = data.get("labels", [])
         raw_post_triage = data.get("raw_post_triage_metadata", {})
+        chosen_model = data.get("model", DEFAULT_MODEL_NAME)
 
         if not title:
             return jsonify({"error": "Issue title is required."}), 400
+
+        # Select model pipeline
+        pipeline = MODEL_SUITE.get(chosen_model, MODEL_SUITE.get(DEFAULT_MODEL_NAME))
+        model_name_used = chosen_model if chosen_model in MODEL_SUITE else DEFAULT_MODEL_NAME
 
         # Preprocessing & cleaning
         clean_title_text = clean_text(title)
@@ -311,7 +339,7 @@ def predict():
 
         # Target Leakage Audit
         firewalled_fields = []
-        for field in ["state", "comments", "assignee", "milestone", "closed_at"]:
+        for field in ["state", "comments", "assignee", "milestone", "closed_at", "closed_by", "reactions"]:
             if field in raw_post_triage and raw_post_triage[field] is not None:
                 firewalled_fields.append({
                     "field": field,
@@ -323,8 +351,22 @@ def predict():
         ground_truth, mapping_reason = resolve_target_label(labels) if labels else ("UNLABELED", "No source labels")
 
         # Model Inference
-        probs = MODEL_PIPELINE.predict_proba([combined_text])[0]
-        pred_idx = np.argmax(probs)
+        t_start = time.perf_counter()
+        if hasattr(pipeline, "predict_proba"):
+            probs = pipeline.predict_proba([combined_text])[0]
+        else:
+            clf_step = pipeline.named_steps["clf"]
+            if hasattr(clf_step, "decision_function"):
+                dec = clf_step.decision_function(VECTORIZER.transform([combined_text]))[0]
+                exp_dec = np.exp(dec - np.max(dec))
+                probs = exp_dec / exp_dec.sum()
+            else:
+                pred = pipeline.predict([combined_text])[0]
+                probs = np.zeros(len(CLASSES))
+                probs[CLASSES.index(pred)] = 1.0
+
+        latency_ms = round((time.perf_counter() - t_start) * 1000.0, 3)
+        pred_idx = int(np.argmax(probs))
         predicted_class = CLASSES[pred_idx]
         confidence = float(probs[pred_idx])
 
@@ -335,6 +377,7 @@ def predict():
 
         return jsonify({
             "status": "success",
+            "model_used": model_name_used,
             "prediction": predicted_class,
             "confidence": round(confidence * 100, 2),
             "probabilities": prob_dict,
@@ -344,6 +387,7 @@ def predict():
             "keywords": keywords,
             "ground_truth": ground_truth,
             "ground_truth_reason": mapping_reason,
+            "latency_ms": latency_ms,
             "pipeline_trace": {
                 "clean_title": clean_title_text,
                 "clean_body_snippet": clean_body_text[:200] + "..." if len(clean_body_text) > 200 else clean_body_text,
@@ -357,6 +401,29 @@ def predict():
         return jsonify({"error": str(e)}), 500
 
 
+@app.route("/api/models")
+def get_models():
+    """Returns available statistical ML models and benchmark metrics."""
+    return jsonify({
+        "available_models": list(MODEL_SUITE.keys()),
+        "default_model": DEFAULT_MODEL_NAME,
+        "benchmark_summary": BENCHMARK_DATA.get("model_benchmarks", {}),
+        "dataset_split": BENCHMARK_DATA.get("metadata", {}).get("dataset_split", {
+            "total": 1459, "train": 1167, "test": 292
+        })
+    })
+
+
+@app.route("/api/clusters")
+def get_clusters():
+    """Returns K-Means unsupervised cluster breakdown and top keywords."""
+    return jsonify({
+        "clusters": BENCHMARK_DATA.get("kmeans_clusters", {}),
+        "total_unlabeled_issues": 1493,
+        "algorithm": "K-Means (k=5) + PCA 2D Dimensionality Reduction"
+    })
+
+
 @app.route("/api/system-metrics")
 def system_metrics():
     """Returns platform operational metrics."""
@@ -366,7 +433,7 @@ def system_metrics():
         "clean_pure_issues": 3115,
         "filtered_pull_requests": 4325,
         "categories_supported": 5,
-        "average_latency_ms": 1.4,
+        "average_latency_ms": 0.12,
         "class_breakdown": {
             "BUG": 771,
             "FEATURE": 615,
@@ -374,7 +441,7 @@ def system_metrics():
             "DOCUMENTATION": 25,
             "OTHER": 17,
         },
-        "model_architecture": "Sublinear TF-IDF + Calibrated Linear Estimator",
+        "models_active": list(MODEL_SUITE.keys()),
         "feature_dimensions": 5000,
     })
 

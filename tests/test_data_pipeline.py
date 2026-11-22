@@ -1,21 +1,4 @@
-"""
-test_data_pipeline.py
-=====================
-Automated Test Suite for Milestone 2 Data Pipeline
-Author: Priyanshu Yadav (S25CSEU0725)
-Project: GitHub Project Issue Classifier
 
-Tests verify:
-- Loading of raw parquet format
-- Missing text handling and normalization
-- Deterministic label mapping and conflict detection
-- Duplicate ID detection and deduplication
-- Pull request filtering
-- Target leakage prevention (exclusion of post-triage fields)
-- Deterministic cleaning and text feature extraction
-- Cleaned and supervised output schema validation
-- Real processed dataset integrity
-"""
 
 import os
 import sys

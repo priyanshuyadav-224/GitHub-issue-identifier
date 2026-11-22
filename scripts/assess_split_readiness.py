@@ -1,16 +1,4 @@
-"""
-assess_split_readiness.py
-=========================
-Milestone 2 - Task 7: Dataset Split Readiness Assessment
-Author: Priyanshu Yadav (S25CSEU0725)
-Project: GitHub Project Issue Classifier
 
-This script evaluates whether the cleaned supervised dataset can support
-rigorous, unbiased ML evaluation in Milestone 3. It checks class counts,
-evaluates stratified k-fold feasibility, detects near-duplicate title clusters
-that could cross train/test boundaries, evaluates temporal split feasibility,
-and outputs docs/split_readiness_report.md.
-"""
 
 import os
 import argparse
