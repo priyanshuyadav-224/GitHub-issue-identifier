@@ -182,8 +182,21 @@ def fetch_github_issue():
         match = re.match(r"https?://github\.com/([^/]+)/([^/]+)/(issues|pull)/(\d+)", clean_url, re.IGNORECASE)
 
         if not match:
+            # Check if user entered a repository URL without an issue number
+            repo_match = re.match(r"https?://github\.com/([^/]+)/([^/]+)(?:/(?:issues)?)?/?$", clean_url, re.IGNORECASE)
+            if repo_match:
+                owner, repo = repo_match.groups()
+                return jsonify({
+                    "error": (
+                        f"Repository URL detected: '{owner}/{repo}'. "
+                        "GitTriage classifies individual issue tickets. "
+                        f"Please provide an issue link like 'https://github.com/{owner}/{repo}/issues/1', "
+                        "or click any of the 6 Verified Test Issues below, or type your ticket directly into the Title & Body fields!"
+                    )
+                }), 400
+
             return jsonify({
-                "error": "Invalid GitHub URL. Expected format: https://github.com/owner/repo/issues/123"
+                "error": "Invalid GitHub URL format. Expected: https://github.com/owner/repo/issues/123 (or click a Verified Test Issue below)."
             }), 400
 
         owner, repo, issue_or_pr, number = match.groups()
@@ -263,9 +276,13 @@ def fetch_github_issue():
                 gh_payload = json.loads(resp.read().decode("utf-8"))
         except urllib.error.HTTPError as he:
             if he.code == 404:
-                return jsonify({"error": f"Issue #{number} not found in repository {repo_slug}."}), 404
+                return jsonify({
+                    "error": f"Issue #{number} not found in repository '{repo_slug}'. (The issue may not exist, or the repository is private). You can click any Verified Test Issue or type ticket details directly into the Title & Body fields below!"
+                }), 404
             elif he.code == 403:
-                return jsonify({"error": "GitHub API rate limit reached. Please select one of the verified sample issues."}), 429
+                return jsonify({
+                    "error": "GitHub API rate limit reached for unauthenticated cloud requests. Please select one of the Verified Test Issues below, or type your ticket details directly into the Title & Body fields!"
+                }), 429
             else:
                 return jsonify({"error": f"GitHub API error: {he}"}), 500
 

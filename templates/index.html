@@ -607,10 +607,15 @@
         </div>
       </div>
 
-      <!-- Pull Request Alert -->
-      <div id="prNotice" class="alert-banner">
-        <strong style="display: block; margin-bottom: 0.25rem;">Notice: Pull Request Detected</strong>
-        <span id="prMessage"></span>
+      <!-- Notification / Alert Banner -->
+      <div id="noticeBanner" class="alert-banner">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem;">
+          <div>
+            <strong id="noticeTitle" style="display: block; margin-bottom: 0.25rem;">Notice</strong>
+            <span id="noticeMessage"></span>
+          </div>
+          <button type="button" onclick="hideNotice()" style="background: none; border: none; color: inherit; font-size: 1.25rem; cursor: pointer; line-height: 1; padding: 0 0.25rem;">&times;</button>
+        </div>
       </div>
 
       <!-- Main Triage Console -->
@@ -1001,17 +1006,40 @@
       }
     }
 
+    function showNotice(title, message, isError = false) {
+      const banner = document.getElementById('noticeBanner');
+      const titleEl = document.getElementById('noticeTitle');
+      const msgEl = document.getElementById('noticeMessage');
+      titleEl.innerText = title;
+      msgEl.innerText = message;
+      banner.style.display = 'block';
+
+      if (isError) {
+        banner.style.background = 'rgba(239, 68, 68, 0.12)';
+        banner.style.borderColor = 'rgba(239, 68, 68, 0.35)';
+        banner.style.color = '#fca5a5';
+      } else {
+        banner.style.background = 'rgba(245, 158, 11, 0.12)';
+        banner.style.borderColor = 'rgba(245, 158, 11, 0.35)';
+        banner.style.color = '#fcd34d';
+      }
+    }
+
+    function hideNotice() {
+      const banner = document.getElementById('noticeBanner');
+      if (banner) banner.style.display = 'none';
+    }
+
     // Live URL fetch
     async function analyzeUrl() {
       const url = document.getElementById('issueUrl').value.trim();
       const btn = document.getElementById('btnAnalyze');
-      const prNotice = document.getElementById('prNotice');
 
       if (!url) return;
 
       btn.innerText = 'Analyzing...';
       btn.disabled = true;
-      prNotice.style.display = 'none';
+      hideNotice();
 
       try {
         const res = await fetch('/api/fetch-github-issue', {
@@ -1022,15 +1050,14 @@
         const data = await res.json();
 
         if (data.status === 'pull_request_filtered') {
-          prNotice.style.display = 'block';
-          document.getElementById('prMessage').innerText = data.message;
+          showNotice('Notice: Pull Request Detected', data.message, false);
           btn.innerText = 'Analyze Ticket';
           btn.disabled = false;
           return;
         }
 
         if (data.error) {
-          alert('Error: ' + data.error);
+          showNotice('GitHub Ticket Ingestion Notice', data.error, true);
           btn.innerText = 'Analyze Ticket';
           btn.disabled = false;
           return;
@@ -1058,7 +1085,7 @@
         executeClassification();
 
       } catch (err) {
-        alert('Fetch failed: ' + err.message);
+        showNotice('Network / Ingestion Error', err.message, true);
       } finally {
         btn.innerText = 'Analyze Ticket';
         btn.disabled = false;
@@ -1100,7 +1127,7 @@
 
         const data = await res.json();
         if (data.error) {
-          alert('Prediction error: ' + data.error);
+          showNotice('Prediction Notice', data.error, true);
           return;
         }
 
@@ -1167,7 +1194,7 @@
         });
 
       } catch (err) {
-        alert('Prediction failed: ' + err.message);
+        showNotice('Prediction Failure', err.message, true);
       } finally {
         btn.innerText = 'Execute Statistical ML Classification';
         btn.disabled = false;
