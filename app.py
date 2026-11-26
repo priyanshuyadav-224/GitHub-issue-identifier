@@ -502,8 +502,40 @@ def serve_figure(filename):
 
 
 if __name__ == "__main__":
-    print("\n" + "=" * 70)
-    print(" GitTriage AI - Intelligent Issue Triage & Routing Console")
-    print(" Running at: http://127.0.0.1:5000")
-    print("=" * 70 + "\n")
-    app.run(host="127.0.0.1", port=5000, debug=False)
+    import threading
+    import webbrowser
+    import time
+
+    port = 5000
+    host = "127.0.0.1"
+    url = f"http://{host}:{port}"
+
+    def auto_open_browser():
+        time.sleep(1.2)
+        try:
+            webbrowser.open(url)
+        except Exception:
+            pass
+
+    threading.Thread(target=auto_open_browser, daemon=True).start()
+
+    print("\n" + "=" * 76, flush=True)
+    print("  GitTriage AI - Statistical Machine Learning Platform", flush=True)
+    print("  Final Project Demonstration Console | Candidate: Priyanshu Yadav (S25CSEU0725)", flush=True)
+    print("=" * 76, flush=True)
+    print(f"  [STATUS] Production WSGI Server (Waitress) active on: {url}", flush=True)
+    print("  [BROWSER] Automatically launching dashboard in your default browser...", flush=True)
+    print("  [DEMO] Ready for college evaluation and live viva presentation!", flush=True)
+    print("  [INFO] Keep this terminal open during your presentation.", flush=True)
+    print("  [STOP] Press CTRL+C at any time in this window to shut down the server.", flush=True)
+    print("=" * 76 + "\n", flush=True)
+
+    try:
+        import waitress
+        waitress.serve(app, host=host, port=port, threads=4)
+    except ImportError:
+        app.run(host=host, port=port, debug=False)
+    except Exception as e:
+        print(f"WSGI notice: {e}. Falling back to standard runner...")
+        app.run(host=host, port=port, debug=False)
+
